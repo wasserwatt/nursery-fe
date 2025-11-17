@@ -454,6 +454,17 @@ export default function Sidebar(props: Props) {
             </ListItem>
 
             <Collapse in={!collapsed && openMaster} unmountOnExit>
+              <Link to={"/master/aboutsupdesk"}>
+                <ListItem disablePadding className={activeClass("/master/aboutsupdesk")}>
+                  <ListItemButton sx={{ pl: 4 }}>
+                    <ListItemIcon>
+                      <ListAltIcon2 className="ml-5 text-white" fontSize="small" />
+                    </ListItemIcon>
+                    <Typography sx={{ fontSize: "14px" }}>{t("sidebar.master_domain_guide")}</Typography>
+                  </ListItemButton>
+                </ListItem>
+              </Link>
+
               <Link to={"/master/childcarepolicy"}>
                 <ListItem disablePadding className={activeClass("/master/childcarepolicy")}>
                   <ListItemButton sx={{ pl: 4 }}>
@@ -464,7 +475,7 @@ export default function Sidebar(props: Props) {
                   </ListItemButton>
                 </ListItem>
               </Link>
-
+{/* 
               <Link to={"/master/agegroups"}>
                 <ListItem disablePadding className={activeClass("/master/agegroups")}>
                   <ListItemButton sx={{ pl: 4 }}>
@@ -474,7 +485,7 @@ export default function Sidebar(props: Props) {
                     <Typography sx={{ fontSize: "14px" }}>{t("sidebar.master_age_groups")}</Typography>
                   </ListItemButton>
                 </ListItem>
-              </Link>
+              </Link> */}
 
               <Link to={"/master/developmentarea"}>
                 <ListItem disablePadding className={activeClass("/master/developmentarea")}>
@@ -487,16 +498,6 @@ export default function Sidebar(props: Props) {
                 </ListItem>
               </Link>
 
-              <Link to={"/master/aboutsupdesk"}>
-                <ListItem disablePadding className={activeClass("/master/aboutsupdesk")}>
-                  <ListItemButton sx={{ pl: 4 }}>
-                    <ListItemIcon>
-                      <ListAltIcon2 className="ml-5 text-white" fontSize="small" />
-                    </ListItemIcon>
-                    <Typography sx={{ fontSize: "14px" }}>{t("sidebar.master_domain_guide")}</Typography>
-                  </ListItemButton>
-                </ListItem>
-              </Link>
 
               <Link to={"/master/subarea"}>
                 <ListItem disablePadding className={activeClass("/master/subarea")}>
