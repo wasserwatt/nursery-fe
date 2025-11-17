@@ -41,3 +41,32 @@
   color: #888;
 }
 
+/* --- View Mode (อ่านอย่างเดียว) --- */
+.view-mode input,
+.view-mode textarea,
+.view-mode select,
+.view-mode .MuiInputBase-root,
+.view-mode .MuiSelect-select {
+  pointer-events: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #000 !important;
+}
+
+.view-mode fieldset {
+  border: none !important;
+}
+
+.view-mode .MuiOutlinedInput-notchedOutline {
+  border: none !important;
+}
+
+.view-mode .MuiCheckbox-root {
+  pointer-events: none !important;
+}
+
+.view-mode button {
+  pointer-events: none !important;
+  opacity: 0.6;
+}
