@@ -397,8 +397,8 @@ const Router = createBrowserRouter([
          element: <OverallPlanAddPages />
       },
       {
-        path: "/report/overallplan/view/:pid",
-        element: <ViewOverallPlan />
+        path: "/report/overallplan/view/:id",
+        element: <OverallPlanAddPages />
       },
       {
         path: "/report/annualplan/edit/:pid",

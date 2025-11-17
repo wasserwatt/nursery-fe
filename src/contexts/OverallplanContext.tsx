@@ -187,12 +187,12 @@ export const OverallPlanProvider = ({ children }: { children: ReactNode }) => {
 
     const deleteOverallPlanMain = async (id: number): Promise<OverallPlanForm> => {
     try {
-      const response = await axios.delete(`/overallplan/${id}`);
+      const response = await axios.patch(`/overallplan/${id}`);
 
       // ถ้า backend ส่ง data ใน .data
       const data: OverallPlanForm = response.data;
 
-      console.log(data); // ดีสำหรับ debug
+      // console.log(data); // ดีสำหรับ debug
       return data;
     } catch (error) {
       console.error("Error fetching overall plan by ID:", error);

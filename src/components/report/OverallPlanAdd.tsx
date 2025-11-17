@@ -51,7 +51,7 @@ import {
   useOverallPlan,
   ObjectiveAgeForm,
 } from "../../contexts/OverallplanContext";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
 // THEME
 const theme = createTheme({
@@ -1113,11 +1113,12 @@ const OverallPlanAdd: React.FC = () => {
     const hue = Math.floor((idx * 360) / Math.max(1, titleIds.length));
     titleColorMap[id] = `hsl(${hue}, 50%, 60%)`;
   });
-
+const location = useLocation();
+const isViewMode = location.pathname.includes("/view/");
   // ---------- RENDER ----------
   return (
     <ThemeProvider theme={theme}>
-      <ContentMain className="flex flex-col min-h-screen">
+      <ContentMain className={`flex flex-col min-h-screen ${isViewMode ? "view-mode" : ""}`}>
         <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
           <Box
             sx={{
