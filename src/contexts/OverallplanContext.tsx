@@ -122,6 +122,7 @@ type OverallPlanContextType = {
   fetchM_ten_figures: () => Promise<M_ten_figures[]>;
   fetchOverallPlans: () => Promise<OverallPlan[]>;
   fetchOverallPlanById: (id: number) => Promise<OverallPlanForm>;
+  fetchOverallPlanYear: () => Promise<OverallPlanForm>;
   editOverallPlanMain: (id: number, form: OverallPlanForm) => Promise<void>;
   createOverallPlan: (form: OverallPlanForm) => Promise<void>;
   deleteOverallPlanMain: (id: number) => Promise<OverallPlanForm>;
@@ -161,7 +162,22 @@ export const OverallPlanProvider = ({ children }: { children: ReactNode }) => {
       // ถ้า backend ส่ง data ใน .data
       const data: OverallPlanForm = response.data;
 
-      console.log(data); // ดีสำหรับ debug
+      // console.log(data); // ดีสำหรับ debug
+      return data;
+    } catch (error) {
+      console.error("Error fetching overall plan by ID:", error);
+      throw error;
+    }
+  };
+
+   const fetchOverallPlanYear = async (): Promise<OverallPlanForm> => {
+    try {
+      const response = await axios.get(`/overallplan/`);
+
+      // ถ้า backend ส่ง data ใน .data
+      const data: OverallPlanForm = response.data;
+
+      // console.log(data); // ดีสำหรับ debug
       return data;
     } catch (error) {
       console.error("Error fetching overall plan by ID:", error);
@@ -287,6 +303,7 @@ export const OverallPlanProvider = ({ children }: { children: ReactNode }) => {
         fetchOverallPlanById,
         editOverallPlanMain,
         deleteOverallPlanMain,
+        fetchOverallPlanYear,
       }}
     >
       {children}
