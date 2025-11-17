@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Typography,
@@ -13,199 +13,305 @@ import {
   IconButton,
   InputAdornment,
   TextField,
-} from '@mui/material';
-import { Edit, Delete, Search, Visibility, FilterList } from '@mui/icons-material';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import ContentMain from '../content/Content';
-import { useNavigate } from 'react-router-dom';
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  CircularProgress,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+import { Edit, Delete, Search, Visibility, FilterList, Add } from "@mui/icons-material";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import ContentMain from "../content/Content";
+import { useFigures } from "../../contexts/master/FiguresContext";
 
 const theme = createTheme({
   palette: {
-    primary: { main: '#1976d2', light: '#42a5f5', dark: '#1565c0' },
-    secondary: { main: '#9c27b0', light: '#ba68c8', dark: '#7b1fa2' },
+    primary: { main: "#1976d2" },
+    secondary: { main: "#9c27b0" },
   },
   components: {
-    MuiPaper: { styleOverrides: { root: { borderRadius: '16px' } } },
-    MuiButton: { styleOverrides: { root: { borderRadius: '20px', textTransform: 'none', fontWeight: 600 } } },
+    MuiPaper: { styleOverrides: { root: { borderRadius: 16 } } },
+    MuiButton: { styleOverrides: { root: { borderRadius: 20, textTransform: "none", fontWeight: 600 } } },
   },
 });
 
 type CareContentRow = {
-  pid: string;
-  goal_id: number;
-  age_group_id: number;
-  area_id: number;
-  sub_area_id: number;
-  goal_text_th: string;
+  id: number;
+  ten_detail: string;
 };
 
 const CareContent: React.FC = () => {
-  const navigate = useNavigate();
+  const { fetchM_ten_figures, createFigures, updateFigures, deleteFigures } = useFigures();
 
   const [rows, setRows] = useState<CareContentRow[]>([]);
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  // Dialog
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<"create" | "edit" | "view">("create");
+  const [current, setCurrent] = useState<CareContentRow | null>(null);
+  const [formDetail, setFormDetail] = useState("");
+  const [dialogLoading, setDialogLoading] = useState(false);
+
+  // Delete
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [toDeleteId, setToDeleteId] = useState<number | null>(null);
+
+  // Snackbar
+  const [snack, setSnack] = useState<{ open: boolean; severity: "success" | "error"; message: string }>({
+    open: false,
+    severity: "success",
+    message: "",
+  });
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchM_ten_figures();
+      setRows(data || []);
+    } catch (err) {
+      console.error(err);
+      setSnack({ open: true, severity: "error", message: "データの読み込みに失敗しました。" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const sample: CareContentRow[] = [
-      {
-        pid: 'c1',
-        goal_id: 1,
-        age_group_id: 1,
-        area_id: 1,
-        sub_area_id: 1,
-        goal_text_th: '・健康や安全に配慮し、一人ひとりの生活リズムを大切にしつつ、生理的欲求を十分に満たす。',
-      },
-      {
-        pid: 'c2',
-        goal_id: 2,
-        age_group_id: 1,
-        area_id: 1,
-        sub_area_id: 2,
-        goal_text_th: '・保育士との応答的な触れ合いや関わりの中で、安心して過ごせるように愛着関係を育んでいく。',
-      },
-      {
-        pid: 'c3',
-        goal_id: 3,
-        age_group_id: 1,
-        area_id: 2,
-        sub_area_id: 1,
-        goal_text_th:
-          '・人や物に興味を示し、探索活動が活発になる。\n' +
-          '・保育士に身の回りを清潔にしてもらうことを心地よいと感じる。',
-      },
-      {
-        pid: 'c5',
-        goal_id: 5,
-        age_group_id: 1,
-        area_id: 2,
-        sub_area_id: 2,
-        goal_text_th:
-          '・保育士との応答的なかかわりのもと、愛着関係が芽生え、要求をする。\n' +
-          '・周囲の人に興味や関心を示し、関わろうとする。',
-      },
-      {
-        pid: 'c6',
-        goal_id: 6,
-        age_group_id: 1,
-        area_id: 2,
-        sub_area_id: 3,
-        goal_text_th:
-          '・保育士の語りかけに泣き声や喃語、片言により声を出して応えようとする。\n' +
-          '・身振りや指さしなどで、思いを表そうとする。',
-      },
-      {
-        pid: 'c7',
-        goal_id: 7,
-        age_group_id: 1,
-        area_id: 2,
-        sub_area_id: 4,
-        goal_text_th: '・身近なものに興味や関心を示し、見たり、触れたりする。',
-      },
-      {
-        pid: 'c8',
-        goal_id: 8,
-        age_group_id: 1,
-        area_id: 2,
-        sub_area_id: 5,
-        goal_text_th: '・生活の中で出会う様々なものを心で受け止め、感じたことを全身で表す。',
-      },
-    ];
-    setRows(sample);
+    loadData();
   }, []);
 
   const filtered = useMemo(() => {
     if (!searchText.trim()) return rows;
     const q = searchText.toLowerCase();
-    return rows.filter(r =>
-      [r.goal_id, r.age_group_id, r.area_id, r.sub_area_id, r.goal_text_th]
-        .map(String)
-        .some(v => v.toLowerCase().includes(q))
-    );
+    return rows.filter((r) => r.ten_detail.toLowerCase().includes(q) || String(r.id).includes(q));
   }, [rows, searchText]);
 
-  const handleView = (pid: string) => navigate(`/master/care-content/view/${pid}`);
-  const handleEdit = (pid: string) => navigate(`/master/care-content/edit/${pid}`);
-  const handleDelete = (pid: string) => {
-    if (window.confirm('削除しますか？')) setRows(prev => prev.filter(r => r.pid !== pid));
+  // Dialog helpers
+  const openCreate = () => {
+    setDialogMode("create");
+    setCurrent(null);
+    setFormDetail("");
+    setDialogOpen(true);
+  };
+
+  const openEdit = (row: CareContentRow) => {
+    setDialogMode("edit");
+    setCurrent(row);
+    setFormDetail(row.ten_detail);
+    setDialogOpen(true);
+  };
+
+  const openView = (row: CareContentRow) => {
+    setDialogMode("view");
+    setCurrent(row);
+    setFormDetail(row.ten_detail);
+    setDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    if (dialogLoading) return;
+    setDialogOpen(false);
+    setCurrent(null);
+    setFormDetail("");
+  };
+
+  const handleSubmit = async () => {
+    if (!formDetail.trim()) {
+      setSnack({ open: true, severity: "error", message: "内容を入力してください。" });
+      return;
+    }
+    try {
+      setDialogLoading(true);
+      if (dialogMode === "create") {
+        await createFigures({ ten_detail: formDetail });
+        setSnack({ open: true, severity: "success", message: "作成しました。" });
+      } else if (dialogMode === "edit" && current) {
+        await updateFigures(current.id, { ten_detail: formDetail });
+        setSnack({ open: true, severity: "success", message: "更新しました。" });
+      }
+      await loadData();
+      closeDialog();
+    } catch (err) {
+      console.error(err);
+      setSnack({ open: true, severity: "error", message: "エラーが発生しました。" });
+    } finally {
+      setDialogLoading(false);
+    }
+  };
+
+  const confirmDelete = (id: number) => {
+    setToDeleteId(id);
+    setDeleteOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (toDeleteId == null) return;
+    try {
+      setDialogLoading(true);
+      await deleteFigures(toDeleteId);
+      setSnack({ open: true, severity: "success", message: "削除しました。" });
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      setSnack({ open: true, severity: "error", message: "削除に失敗しました。" });
+    } finally {
+      setDialogLoading(false);
+      setDeleteOpen(false);
+      setToDeleteId(null);
+    }
   };
 
   return (
     <ThemeProvider theme={theme}>
       <ContentMain>
-        <Box sx={{ p: 3, minHeight: '100vh' }}>
-
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight="bold" sx={{ mb: 1, color: '#1976d2' }}>
-              Care Content
+        <Box sx={{ p: 3, minHeight: "100vh" }}>
+          <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Typography variant="h4" fontWeight="bold" sx={{ mb: 1, color: "#1976d2" }}>
+              Ten Figures (10の姿)
             </Typography>
-            
+            <Button startIcon={<Add />} variant="contained" onClick={openCreate}>
+              新規作成
+            </Button>
           </Box>
 
+          {/* Filter */}
           <Box sx={{ mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <FilterList sx={{ mr: 1, color: '#1976d2' }} />
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>フィルター</Typography>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <FilterList sx={{ mr: 1, color: "#1976d2" }} />
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                フィルター
+              </Typography>
             </Box>
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
                 <TextField
-                  fullWidth size="small"
-                  placeholder="検索キーワード"
+                  fullWidth
+                  size="small"
+                  placeholder="検索（内容 / ID）"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   InputProps={{
-                    startAdornment: <InputAdornment position="start"><Search /></InputAdornment>,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search />
+                      </InputAdornment>
+                    ),
                   }}
                 />
               </Grid>
             </Grid>
           </Box>
 
-          <TableContainer component={Paper} sx={{ borderRadius: '16px', overflowX: 'auto' }}>
-            <Table sx={{ '& td': { verticalAlign: 'top' } }}>
+          {/* Table */}
+          <TableContainer component={Paper} sx={{ borderRadius: "16px" }}>
+            <Table>
               <TableHead>
-                <TableRow sx={{ backgroundColor: '#f3e5f5' }}>
-                  <TableCell sx={{ fontWeight: 'bold' }}>goal_id</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>age_group_id</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>area_id</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>sub_area_id</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>goal_text_th</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>管理</TableCell>
+                <TableRow sx={{ backgroundColor: "#f3e5f5" }}>
+                  <TableCell sx={{ fontWeight: "bold" }}>ID</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>内容</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: 150 }}>操作</TableCell>
                 </TableRow>
               </TableHead>
-
               <TableBody>
-                {filtered.map(r => (
-                  <TableRow key={r.pid}>
-                    <TableCell>{r.goal_id}</TableCell>
-                    <TableCell>{r.age_group_id}</TableCell>
-                    <TableCell>{r.area_id}</TableCell>
-                    <TableCell>{r.sub_area_id}</TableCell>
-                    <TableCell sx={{ whiteSpace: 'pre-line', lineHeight: 1.6 }}>
-                      {r.goal_text_th}
-                    </TableCell>
-
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <IconButton size="small" onClick={() => handleView(r.pid)} color="info">
-                          <Visibility fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" onClick={() => handleEdit(r.pid)} color="primary">
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" onClick={() => handleDelete(r.pid)} color="error">
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Box>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={3} align="center" sx={{ py: 6 }}>
+                      <CircularProgress />
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : filtered.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3} align="center" sx={{ py: 6 }}>
+                      データがありません
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filtered.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>{row.id}</TableCell>
+                      <TableCell sx={{ whiteSpace: "pre-line" }}>{row.ten_detail}</TableCell>
+                      <TableCell>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <IconButton size="small" onClick={() => openView(row)} color="info">
+                            <Visibility fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => openEdit(row)} color="primary">
+                            <Edit fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => confirmDelete(row.id)} color="error">
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
-
             </Table>
           </TableContainer>
-
         </Box>
+
+        {/* Dialog */}
+        <Dialog open={dialogOpen} fullWidth maxWidth="sm" onClose={closeDialog}>
+          <DialogTitle>
+            {dialogMode === "create" && "新規作成"}
+            {dialogMode === "edit" && "編集"}
+            {dialogMode === "view" && "閲覧"}
+          </DialogTitle>
+          <DialogContent dividers>
+            <TextField
+              label="内容"
+              fullWidth
+              multiline
+              minRows={3}
+              value={formDetail}
+              onChange={(e) => setFormDetail(e.target.value)}
+              disabled={dialogMode === "view" || dialogLoading}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeDialog} disabled={dialogLoading}>
+              閉じる
+            </Button>
+            {dialogMode !== "view" && (
+              <Button variant="contained" onClick={handleSubmit} disabled={dialogLoading}>
+                {dialogLoading ? <CircularProgress size={20} /> : dialogMode === "create" ? "作成" : "保存"}
+              </Button>
+            )}
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Dialog */}
+        <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
+          <DialogTitle>削除確認</DialogTitle>
+          <DialogContent>
+            <Typography>このレコードを削除してもよろしいですか？</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteOpen(false)} disabled={dialogLoading}>
+              キャンセル
+            </Button>
+            <Button color="error" variant="contained" onClick={handleDelete} disabled={dialogLoading}>
+              {dialogLoading ? <CircularProgress size={20} /> : "削除"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar */}
+        <Snackbar
+          open={snack.open}
+          autoHideDuration={3000}
+          onClose={() => setSnack((s) => ({ ...s, open: false }))}
+        >
+          <Alert onClose={() => setSnack((s) => ({ ...s, open: false }))} severity={snack.severity} sx={{ width: "100%" }}>
+            {snack.message}
+          </Alert>
+        </Snackbar>
       </ContentMain>
     </ThemeProvider>
   );
