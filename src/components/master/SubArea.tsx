@@ -26,7 +26,7 @@ import { Edit, Delete, Search, Visibility, FilterList, ExpandMore, ExpandLess, C
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import ContentMain from '../content/Content';
 import { useNavigate } from 'react-router-dom';
-import { useSubarea } from "../../contexts/SubareaContext";
+import { useSubarea } from "../../contexts/master/SubareaContext";
 import axios from 'axios';
 
 const theme = createTheme({
@@ -195,7 +195,7 @@ const handleEditSave = async () => {
           {/* Header */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" fontWeight="bold" sx={{ mb: 1, color: 'primary.main' }}>
-              SUB_AREAS
+                Yougo (養護)
             </Typography>
             <Typography variant="body2" color="text.secondary">
               全 {filteredRows.length} 件

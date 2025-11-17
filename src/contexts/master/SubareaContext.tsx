@@ -1,6 +1,6 @@
 // src/contexts/SubareaContext.tsx
 import React, { createContext, ReactNode, useContext } from "react";
-import axios from "../configs/axios";
+import axios from "../../configs/axios";
 
 // type ของ Subarea (map จาก Yougo)
 export type Subarea = {

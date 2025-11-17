@@ -43,14 +43,24 @@ import ContentMain from "../content/Content";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { useTranslation } from "react-i18next";
 import {
-  M_policy,
-  M_development_areas,
-  Yougo,
-  M_competencies,
-  M_ten_figures,
   useOverallPlan,
   ObjectiveAgeForm,
 } from "../../contexts/OverallplanContext";
+import { usePhilosophy } from "../../contexts/master/PhilosophyContext";
+import { usePolicy, M_policy } from "../../contexts/master/PolicyContext";
+import {
+  useDevelopment_areas,
+  M_development_areas,
+} from "../../contexts/master/development_areasContext";
+import { useSubarea, Subarea } from "../../contexts/master/SubareaContext";
+import {
+  useCompetencies,
+  M_competencies,
+} from "../../contexts/master/CompetenciesContext";
+import {
+  useFigures,
+  M_ten_figures,
+} from "../../contexts/master/FiguresContext";
 import { useLocation, useParams } from "react-router-dom";
 
 // THEME
@@ -78,7 +88,7 @@ interface FormData {
   child_vision: string;
   educator_vision: string;
   developmentAreas: M_development_areas[];
-  developmentYougo: Yougo[];
+  developmentYougo: Subarea[];
   competencies: M_competencies[];
   goalSupport: string;
   providedSupport: string;
@@ -643,17 +653,17 @@ const MemoAnnualRow = React.memo(
 const OverallPlanAdd: React.FC = () => {
   const { t } = useTranslation();
   const {
-    fetchM_philosophy,
-    fetchM_policy,
-    fetchM_development_areas,
-    fetchM_development_Yougo,
-    fetchM_competencies,
-    fetchM_ten_figures,
     createOverallPlan,
     editOverallPlanMain,
     fetchOverallPlanById,
     fetchOverallPlanYear,
   } = useOverallPlan();
+  const { fetchM_philosophy } = usePhilosophy();
+  const { fetchM_policy } = usePolicy();
+  const { fetchM_development_areas } = useDevelopment_areas();
+  const { fetchSubareas } = useSubarea();
+  const { fetchM_competencies } = useCompetencies();
+  const { fetchM_ten_figures } = useFigures();
 
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
@@ -889,11 +899,11 @@ const OverallPlanAdd: React.FC = () => {
           fetchM_philosophy(),
           fetchM_policy(),
           fetchM_development_areas(),
-          fetchM_development_Yougo(),
+          fetchSubareas(),
           fetchM_competencies(),
           isEdit && id
             ? fetchOverallPlanById(Number(id))
-            : fetchOverallPlanYear(), 
+            : fetchOverallPlanYear(),
         ]);
 
         let newFormData: any = {
@@ -947,7 +957,7 @@ const OverallPlanAdd: React.FC = () => {
 
           newFormData = {
             ...newFormData,
-            year: isEdit && id ? planData.year : "", 
+            year: isEdit && id ? planData.year : "",
             philosophy_detail:
               planData.philosophy_snapshot || newFormData.philosophy_detail,
             child_vision: planData.child_vision || "",
@@ -1113,12 +1123,16 @@ const OverallPlanAdd: React.FC = () => {
     const hue = Math.floor((idx * 360) / Math.max(1, titleIds.length));
     titleColorMap[id] = `hsl(${hue}, 50%, 60%)`;
   });
-const location = useLocation();
-const isViewMode = location.pathname.includes("/view/");
+  const location = useLocation();
+  const isViewMode = location.pathname.includes("/view/");
   // ---------- RENDER ----------
   return (
     <ThemeProvider theme={theme}>
-      <ContentMain className={`flex flex-col min-h-screen ${isViewMode ? "view-mode" : ""}`}>
+      <ContentMain
+        className={`flex flex-col min-h-screen ${
+          isViewMode ? "view-mode" : ""
+        }`}
+      >
         <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
           <Box
             sx={{
