@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from "react";
 import ContentMain from "../content/Content";
-import { Button, Grid, IconButton, Typography, TextField } from "@mui/material";
+import {
+  Button,
+  Grid,
+  IconButton,
+  Typography,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Skeleton,
+} from "@mui/material";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -25,7 +37,8 @@ interface Column {
 }
 
 const Overallplan: React.FC = () => {
-  const { fetchOverallPlans, deleteOverallPlanMain } = useOverallPlan();
+  const { fetchOverallPlans, deleteOverallPlanMain, plans } = useOverallPlan();
+  const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
   const [data, setData] = useState<Data[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,7 +46,8 @@ const Overallplan: React.FC = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const navigate = useNavigate();
-
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const columns: readonly Column[] = [
     {
       id: "year",
@@ -62,135 +76,72 @@ const Overallplan: React.FC = () => {
     detail: JSX.Element;
   }
 
-  // useEffect(() => {
-  //   const initializeSampleData = () => {
-  //     const existingData = JSON.parse(sessionStorage.getItem('overallplanData') || '[]');
-  //     if (existingData.length === 0) {
-  //       const sampleData = [
-  //         { pid: '111', year: '2024',  name: '(全体的な計画)' },
-  //         { pid: '222', year: '2024',  name: '(全体的な計画)' },
-  //         { pid: '333', year: '2024',  name: '(全体的な計画)' },
-  //         { pid: '444', year: '2023',  name: '(全体的な計画)' },
-  //         { pid: '555', year: '2023',  name: '(全体的な計画)' },
-  //         { pid: '666', year: '2023',  name: '(全体的な計画)' },
-  //       ];
-  //       sessionStorage.setItem('overallplanData', JSON.stringify(sampleData));
-  //     }
-  //   };
-  //   initializeSampleData();
-  // }, []);
-
-  // useEffect(() => {
-  //   const fetchData = () => {
-  //     const storedData = JSON.parse(sessionStorage.getItem('overallplanData') || '[]');
-  //     const transformedData = storedData.map((item: any) => ({
-  //       pid: item.pid,
-  //       year: item.year,
-  //       name: item.name,
-  //       detail: (
-  //         <>
-  //           <IconButton
-  //             aria-label="edit"
-  //             size="small"
-  //             onClick={() => navigate(`/report/overallplan/edit/${item.pid}`)}
-  //           >
-  //             <EditIcon fontSize="small" className='text-sky-600' />
-  //           </IconButton>
-  //           <IconButton
-  //             aria-label="view"
-  //             size="small"
-  //             onClick={() => navigate(`/report/overallplan/view/${item.pid}`)}
-  //           >
-  //             <RemoveRedEyeIcon fontSize="small" className='text-amber-500' />
-  //           </IconButton>
-  //           <IconButton
-  //             aria-label="delete"
-  //             size="small"
-  //             onClick={() => {
-  //               const confirmDelete = window.confirm('Are you sure you want to delete this item?');
-  //               if (confirmDelete) {
-  //                 setData(prevData => prevData.filter(data => data.pid !== item.pid));
-  //                 const updatedData = storedData.filter((data: any) => data.pid !== item.pid);
-  //                 sessionStorage.setItem('overallplanData', JSON.stringify(updatedData));
-  //               }
-  //             }}
-  //           >
-  //             <DeleteIcon fontSize="small" className='text-red-600' />
-  //           </IconButton>
-  //         </>
-  //       )
-  //     }));
-  //     setData(transformedData);
-  //   };
-  //   fetchData();
-  // }, []);
-
   useEffect(() => {
-    const loadPlans = async () => {
-      try {
-        const plans = await fetchOverallPlans();
-
-        const mapped = plans.map((item) => ({
-          pid: String(item.id),
-          year: String(item.year),
-          name: new Date(item.created_at).toLocaleString("ja-JP"), // createdAt = name
-          detail: (
-            <>
-              <IconButton
-                aria-label="edit"
-                size="small"
-                onClick={() => navigate(`/report/overallplan/edit/${item.id}`)}
-              >
-                <EditIcon fontSize="small" className="text-sky-600" />
-              </IconButton>
-
-              <IconButton
-                aria-label="view"
-                size="small"
-                onClick={() => navigate(`/report/overallplan/view/${item.id}`)}
-              >
-                <RemoveRedEyeIcon fontSize="small" className="text-amber-500" />
-              </IconButton>
-
-              <IconButton
-                aria-label="delete"
-                size="small"
-                onClick={async () => {
-                  const confirmDelete = window.confirm("Are you sure?");
-                  if (!confirmDelete) return;
-
-                  try {
-                    // เรียก API ลบ
-                    await deleteOverallPlanMain(Number(item.id)); // item.id = pid ของแต่ละ row
-
-                    // อัปเดต state หลังจากลบสำเร็จ
-                    setData((prev) =>
-                      prev.filter((d) => d.pid !== String(item.id))
-                    );
-                    setFilteredRows((prev) =>
-                      prev.filter((d) => d.pid !== String(item.id))
-                    );
-                  } catch (err) {
-                    console.error("Failed to delete overall plan:", err);
-                    alert("Failed to delete overall plan. Please try again.");
-                  }
-                }}
-              >
-                <DeleteIcon fontSize="small" className="text-red-600" />
-              </IconButton>
-            </>
-          ),
-        }));
-
-        setData(mapped);
-        setFilteredRows(mapped);
-      } catch (err) {
-        console.error("Error loading plans:", err);
-      }
+    const load = async () => {
+      setLoading(true); // เริ่มโหลด
+      await fetchOverallPlans(); // ดึงข้อมูล
+      setLoading(false); // เสร็จแล้ว
     };
 
-    loadPlans();
+    load();
   }, []);
+
+  const handleDelete = async (id: string | number) => {
+    const idStr = String(id);
+    const idNum = Number(id);
+
+    setData((prev) => prev.filter((d) => d.pid !== idStr));
+    setFilteredRows((prev) => prev.filter((d) => d.pid !== idStr));
+
+    try {
+      await deleteOverallPlanMain(idNum);
+    } catch (err) {
+      fetchOverallPlans();
+    }
+  };
+
+  useEffect(() => {
+    const mapped = plans
+      .sort((a, b) => Number(a.year) - Number(b.year)) // ➜ เรียงจากน้อยไปมาก
+      .map((item) => ({
+        pid: String(item.id),
+        year: String(item.year),
+        name: new Date(item.created_at).toLocaleString("ja-JP"),
+        detail: (
+          <>
+            <IconButton
+              aria-label="edit"
+              size="small"
+              onClick={() => navigate(`/report/overallplan/edit/${item.id}`)}
+            >
+              <EditIcon fontSize="small" className="text-sky-600" />
+            </IconButton>
+
+            <IconButton
+              aria-label="view"
+              size="small"
+              onClick={() => navigate(`/report/overallplan/view/${item.id}`)}
+            >
+              <RemoveRedEyeIcon fontSize="small" className="text-amber-500" />
+            </IconButton>
+
+            <IconButton
+              aria-label="delete"
+              size="small"
+              onClick={() => {
+                setDeleteId(Number(item.id));
+                setOpenConfirm(true);
+              }}
+            >
+              <DeleteIcon fontSize="small" className="text-red-600" />
+            </IconButton>
+          </>
+        ),
+      }));
+
+    setData(mapped);
+    setFilteredRows(mapped);
+  }, [plans]);
 
   useEffect(() => {
     if (searchTerm === "") {
@@ -243,7 +194,7 @@ const Overallplan: React.FC = () => {
           <Grid>
             <Button
               variant="contained"
-              href="/report/overallplan/add"
+              onClick={() => navigate("/report/overallplan/add")}
               size="small"
               startIcon={<AddIcon />}
             >
@@ -272,38 +223,54 @@ const Overallplan: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredRows
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row, index) => {
-                      return (
-                        <TableRow
-                          hover
-                          role="checkbox"
-                          tabIndex={-1}
-                          key={index}
-                        >
-                          {columns.map((column) => {
-                            const value = row[column.id];
-                            return (
-                              <TableCell key={column.id} align={column.align}>
-                                {column.id === "detail" ? (
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      justifyContent: "flex-end",
-                                    }}
-                                  >
-                                    {value}
-                                  </div>
-                                ) : (
-                                  value
-                                )}
-                              </TableCell>
-                            );
-                          })}
+                  {loading
+                    ? // 🔥 แสดง Skeleton 8 แถว (หรือจะเพิ่ม/ลดจำนวนก็ได้)
+                      [...Array(8)].map((_, i) => (
+                        <TableRow key={i}>
+                          {columns.map((col) => (
+                            <TableCell key={col.id} align={col.align}>
+                              <Skeleton
+                                variant="rectangular"
+                                height={20}
+                                sx={{ borderRadius: 1 }}
+                              />
+                            </TableCell>
+                          ))}
                         </TableRow>
-                      );
-                    })}
+                      ))
+                    : filteredRows
+                        .slice(
+                          page * rowsPerPage,
+                          page * rowsPerPage + rowsPerPage
+                        )
+                        .map((row, index) => (
+                          <TableRow
+                            hover
+                            role="checkbox"
+                            tabIndex={-1}
+                            key={index}
+                          >
+                            {columns.map((column) => {
+                              const value = row[column.id];
+                              return (
+                                <TableCell key={column.id} align={column.align}>
+                                  {column.id === "detail" ? (
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        justifyContent: "flex-end",
+                                      }}
+                                    >
+                                      {value}
+                                    </div>
+                                  ) : (
+                                    value
+                                  )}
+                                </TableCell>
+                              );
+                            })}
+                          </TableRow>
+                        ))}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -318,6 +285,30 @@ const Overallplan: React.FC = () => {
             />
           </Paper>
         </Grid>
+        <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
+          <DialogTitle>Confirm Delete</DialogTitle>
+
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete this item?
+            </DialogContentText>
+          </DialogContent>
+
+          <DialogActions>
+            <Button onClick={() => setOpenConfirm(false)}>Cancel</Button>
+
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => {
+                if (deleteId != null) handleDelete(deleteId);
+                setOpenConfirm(false);
+              }}
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
       </ContentMain>
     </>
   );

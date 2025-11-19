@@ -468,7 +468,7 @@ const AbilitiesSelect: React.FC<AbilitiesSelectProps> = ({
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
           {selected.map((val) => (
             <Chip
-              key={val}
+              key={`${fieldName}-${val}`}
               label={val}
               onDelete={() => onDelete(val)}
               onMouseDown={(event) => {
@@ -538,7 +538,7 @@ const AbilitiesSelect: React.FC<AbilitiesSelectProps> = ({
         </Box>
       </Box>
       {abilityMaster.map((name) => (
-        <MenuItem key={name} value={name}>
+        <MenuItem key={`${fieldName}-${name}`} value={name}>
           <Checkbox checked={value.indexOf(name) > -1} />
           <ListItemText primary={name} />
         </MenuItem>
@@ -905,7 +905,7 @@ const OverallPlanAdd: React.FC = () => {
             ? fetchOverallPlanById(Number(id))
             : fetchOverallPlanYear(),
         ]);
-
+        console.log(philosophies)
         let newFormData: any = {
           ...INITIAL_FORM_DATA,
           philosophy_detail: philosophies?.[0]?.philosophy_detail || "",
@@ -959,13 +959,9 @@ const OverallPlanAdd: React.FC = () => {
             ...newFormData,
             year: isEdit && id ? planData.year : "",
             philosophy_detail:
-              planData.philosophy_snapshot || newFormData.philosophy_detail,
+            planData.philosophy_snapshot || newFormData.philosophy_detail,
             child_vision: planData.child_vision || "",
             educator_vision: planData.educator_vision || "",
-            methods: planData.policies.map((p: any) => ({
-              id: p.policy_master_id,
-              policy_detail: p.policy_text_snap,
-            })),
             abilitiesGoals: planData.figures
               .filter((f: any) => f.type === "育みたい 資質・能力")
               .map((f: any) => f.title_snapshot),
@@ -1225,7 +1221,7 @@ const OverallPlanAdd: React.FC = () => {
           <AccordionDetails>
             <Grid container spacing={2}>
               {formData.methods.map((method, index) => (
-                <Grid item xs={12} md={6} key={method.id}>
+                <Grid item xs={12} md={6} key={`${method.id}-${index}`}>
                   <TextField
                     fullWidth
                     label={`Method ${index + 1}`}
@@ -1338,7 +1334,7 @@ const OverallPlanAdd: React.FC = () => {
                   const ageTableKey = `ageTable_${y.title_id}`;
 
                   return (
-                    <React.Fragment key={y.title_id}>
+                    <React.Fragment key={`${area.id}-${y.title_id}`}>
                       <MemoGoalSection
                         title={y.title}
                         goals={formData[key] ?? []}

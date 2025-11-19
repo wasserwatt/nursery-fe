@@ -41,7 +41,11 @@ const theme = createTheme({
   },
   components: {
     MuiPaper: { styleOverrides: { root: { borderRadius: 16 } } },
-    MuiButton: { styleOverrides: { root: { borderRadius: 20, textTransform: "none", fontWeight: 600 } } },
+    MuiButton: {
+      styleOverrides: {
+        root: { borderRadius: 20, textTransform: "none", fontWeight: 600 },
+      },
+    },
   },
 });
 
@@ -56,6 +60,7 @@ const AboutsupDesk: React.FC = () => {
     createPhilosophy,
     updatePhilosophy,
     deletePhilosophy,
+    Philosophy,
   } = usePhilosophy();
 
   const [rows, setRows] = useState<Row[]>([]);
@@ -64,7 +69,9 @@ const AboutsupDesk: React.FC = () => {
 
   // dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<"create" | "edit" | "view">("create");
+  const [dialogMode, setDialogMode] = useState<"create" | "edit" | "view">(
+    "create"
+  );
   const [current, setCurrent] = useState<Row | null>(null);
   const [formDetail, setFormDetail] = useState("");
   const [dialogLoading, setDialogLoading] = useState(false);
@@ -83,23 +90,16 @@ const AboutsupDesk: React.FC = () => {
     severity: "success",
     message: "",
   });
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchM_philosophy();
-      setRows(data || []);
-    } catch (err) {
-      console.error(err);
-      setSnack({ open: true, severity: "error", message: "データの読み込みに失敗しました。" });
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    // โหลดข้อมูลครั้งแรกจาก API
+    fetchM_philosophy();
+  }, []);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    const sorted = [...Philosophy].sort((a, b) => a.id - b.id);
+    setRows(sorted);
+    setLoading(sorted.length === 0);
+  }, [Philosophy]);
 
   const filtered = useMemo(() => {
     if (!searchText.trim()) return rows;
@@ -156,16 +156,28 @@ const AboutsupDesk: React.FC = () => {
       setDialogLoading(true);
       if (dialogMode === "create") {
         await createPhilosophy({ philosophy_detail: detail });
-        setSnack({ open: true, severity: "success", message: "作成しました。" });
+        setSnack({
+          open: true,
+          severity: "success",
+          message: "作成しました。",
+        });
       } else if (dialogMode === "edit" && current) {
         await updatePhilosophy(current.id, { philosophy_detail: detail });
-        setSnack({ open: true, severity: "success", message: "更新しました。" });
+        setSnack({
+          open: true,
+          severity: "success",
+          message: "更新しました。",
+        });
       }
-      await loadData();
+
       closeDialog();
     } catch (err) {
       console.error(err);
-      setSnack({ open: true, severity: "error", message: "エラーが発生しました。" });
+      setSnack({
+        open: true,
+        severity: "error",
+        message: "エラーが発生しました。",
+      });
     } finally {
       setDialogLoading(false);
     }
@@ -183,10 +195,13 @@ const AboutsupDesk: React.FC = () => {
       setDialogLoading(true);
       await deletePhilosophy(toDeleteId);
       setSnack({ open: true, severity: "success", message: "削除しました。" });
-      await loadData();
     } catch (err) {
       console.error(err);
-      setSnack({ open: true, severity: "error", message: "削除に失敗しました。" });
+      setSnack({
+        open: true,
+        severity: "error",
+        message: "削除に失敗しました。",
+      });
     } finally {
       setDialogLoading(false);
       setDeleteOpen(false);
@@ -199,11 +214,26 @@ const AboutsupDesk: React.FC = () => {
       <ContentMain>
         <Box sx={{ p: 3, minHeight: "100vh" }}>
           {/* Header */}
-          <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Typography variant="h4" fontWeight="bold" sx={{ mb: 1, color: "#1976d2" }}>
+          <Box
+            sx={{
+              mb: 4,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography
+              variant="h4"
+              fontWeight="bold"
+              sx={{ mb: 1, color: "#1976d2" }}
+            >
               Philosophy（保育理念）
             </Typography>
-            <Button startIcon={<Add />} variant="contained" onClick={openCreate}>
+            <Button
+              startIcon={<Add />}
+              variant="contained"
+              onClick={openCreate}
+            >
               作成
             </Button>
           </Box>
@@ -241,9 +271,13 @@ const AboutsupDesk: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#f3e5f5" }}>
-                  <TableCell sx={{ fontWeight: "bold", width: 80 }}>ID</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: 80 }}>
+                    ID
+                  </TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>内容</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", width: 150 }}>操作</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: 150 }}>
+                    操作
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -263,16 +297,32 @@ const AboutsupDesk: React.FC = () => {
                   filtered.map((r) => (
                     <TableRow key={r.id}>
                       <TableCell>{r.id}</TableCell>
-                      <TableCell sx={{ whiteSpace: "pre-line" }}>{r.philosophy_detail}</TableCell>
+                      <TableCell sx={{ whiteSpace: "pre-line" }}>
+                        {r.philosophy_detail}
+                      </TableCell>
                       <TableCell>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <IconButton size="small" onClick={() => openView(r)} color="info">
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <IconButton
+                            size="small"
+                            onClick={() => openView(r)}
+                            color="info"
+                          >
                             <Visibility fontSize="small" />
                           </IconButton>
-                          <IconButton size="small" onClick={() => openEdit(r)} color="primary">
+                          <IconButton
+                            size="small"
+                            onClick={() => openEdit(r)}
+                            color="primary"
+                          >
                             <Edit fontSize="small" />
                           </IconButton>
-                          <IconButton size="small" onClick={() => confirmDelete(r.id)} color="error">
+                          <IconButton
+                            size="small"
+                            onClick={() => confirmDelete(r.id)}
+                            color="error"
+                          >
                             <Delete fontSize="small" />
                           </IconButton>
                         </Box>
@@ -304,10 +354,22 @@ const AboutsupDesk: React.FC = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={closeDialog} disabled={dialogLoading}>閉じる</Button>
+            <Button onClick={closeDialog} disabled={dialogLoading}>
+              閉じる
+            </Button>
             {dialogMode !== "view" && (
-              <Button onClick={handleSubmit} variant="contained" disabled={dialogLoading}>
-                {dialogLoading ? <CircularProgress size={20} /> : dialogMode === "create" ? "作成" : "保存"}
+              <Button
+                onClick={handleSubmit}
+                variant="contained"
+                disabled={dialogLoading}
+              >
+                {dialogLoading ? (
+                  <CircularProgress size={20} />
+                ) : dialogMode === "create" ? (
+                  "作成"
+                ) : (
+                  "保存"
+                )}
               </Button>
             )}
           </DialogActions>
@@ -320,16 +382,34 @@ const AboutsupDesk: React.FC = () => {
             <Typography>このレコードを削除してもよろしいですか？</Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDeleteOpen(false)} disabled={dialogLoading}>キャンセル</Button>
-            <Button color="error" variant="contained" onClick={handleDelete} disabled={dialogLoading}>
+            <Button
+              onClick={() => setDeleteOpen(false)}
+              disabled={dialogLoading}
+            >
+              キャンセル
+            </Button>
+            <Button
+              color="error"
+              variant="contained"
+              onClick={handleDelete}
+              disabled={dialogLoading}
+            >
               {dialogLoading ? <CircularProgress size={20} /> : "削除"}
             </Button>
           </DialogActions>
         </Dialog>
 
         {/* Snackbar */}
-        <Snackbar open={snack.open} autoHideDuration={3000} onClose={() => setSnack((s) => ({ ...s, open: false }))}>
-          <Alert onClose={() => setSnack((s) => ({ ...s, open: false }))} severity={snack.severity} sx={{ width: "100%" }}>
+        <Snackbar
+          open={snack.open}
+          autoHideDuration={3000}
+          onClose={() => setSnack((s) => ({ ...s, open: false }))}
+        >
+          <Alert
+            onClose={() => setSnack((s) => ({ ...s, open: false }))}
+            severity={snack.severity}
+            sx={{ width: "100%" }}
+          >
             {snack.message}
           </Alert>
         </Snackbar>
