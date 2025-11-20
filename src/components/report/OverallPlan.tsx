@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import ContentMain from "../content/Content";
 import {
   Button,
@@ -11,16 +11,17 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Skeleton,
+  CircularProgress,
+  Box,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
 } from "@mui/material";
-import Paper from "@mui/material/Paper";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
 import EditIcon from "@mui/icons-material/Edit";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import AddIcon from "@mui/icons-material/Add";
@@ -28,6 +29,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useOverallPlan } from "../../contexts/OverallplanContext";
+
 interface Column {
   id: "pid" | "year" | "name" | "detail";
   label: string;
@@ -36,12 +38,29 @@ interface Column {
   format?: (value: number) => string;
 }
 
+interface Data {
+  pid: string;
+  year: string;
+  name: string;
+  detail: JSX.Element;
+}
+
+const useDebounced = (value: string, delay = 200) => {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+};
+
 const Overallplan: React.FC = () => {
-  const { fetchOverallPlans, deleteOverallPlanMain, plans } = useOverallPlan();
+  const { fetchOverallPlans, deleteOverallPlanMain, plans,socket } = useOverallPlan();
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
   const [data, setData] = useState<Data[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounced(searchTerm, 200);
   const [filteredRows, setFilteredRows] = useState<Data[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -69,41 +88,30 @@ const Overallplan: React.FC = () => {
     },
   ];
 
-  interface Data {
-    pid: string;
-    year: string;
-    name: string;
-    detail: JSX.Element;
-  }
 
-  useEffect(() => {
+ useEffect(() => {
+  if (plans.length === 0) {  
+    let mounted = true;
     const load = async () => {
-      setLoading(true); // เริ่มโหลด
-      await fetchOverallPlans(); // ดึงข้อมูล
-      setLoading(false); // เสร็จแล้ว
+      setLoading(true);
+      try {
+        await fetchOverallPlans();
+      } finally {
+        if (mounted) setLoading(false);
+      }
     };
-
     load();
-  }, []);
+    return () => { mounted = false; };
+  } else {
+    setLoading(false); 
+  }
+}, [plans, fetchOverallPlans]);
 
-  const handleDelete = async (id: string | number) => {
-    const idStr = String(id);
-    const idNum = Number(id);
-
-    setData((prev) => prev.filter((d) => d.pid !== idStr));
-    setFilteredRows((prev) => prev.filter((d) => d.pid !== idStr));
-
-    try {
-      await deleteOverallPlanMain(idNum);
-    } catch (err) {
-      fetchOverallPlans();
-    }
-  };
-
-  useEffect(() => {
-    const mapped = plans
-      .sort((a, b) => Number(a.year) - Number(b.year)) // ➜ เรียงจากน้อยไปมาก
-      .map((item) => ({
+  const mapped = useMemo(() => {
+    return (plans || [])
+      .slice()
+      .sort((a: any, b: any) => Number(a.year) - Number(b.year))
+      .map((item: any) => ({
         pid: String(item.id),
         year: String(item.year),
         name: new Date(item.created_at).toLocaleString("ja-JP"),
@@ -138,22 +146,39 @@ const Overallplan: React.FC = () => {
           </>
         ),
       }));
-
-    setData(mapped);
-    setFilteredRows(mapped);
-  }, [plans]);
+  }, [plans, navigate]);
 
   useEffect(() => {
-    if (searchTerm === "") {
+    setData(mapped);
+    setFilteredRows(mapped);
+  }, [mapped]);
+
+  useEffect(() => {
+    if (debouncedSearch === "") {
       setFilteredRows(data);
     } else {
-      setFilteredRows(
-        data.filter((row) =>
-          row.year.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
+      const q = debouncedSearch.toLowerCase();
+      setFilteredRows(data.filter((row) => row.year.toLowerCase().includes(q)));
     }
-  }, [searchTerm, data]);
+    setPage(0);
+  }, [debouncedSearch, data]);
+
+  const handleDelete = useCallback(
+    async (id: string | number) => {
+      const idStr = String(id);
+      const idNum = Number(id);
+
+      setData((prev) => prev.filter((d) => d.pid !== idStr));
+      setFilteredRows((prev) => prev.filter((d) => d.pid !== idStr));
+
+      try {
+        await deleteOverallPlanMain(idNum);
+      } catch (err) {
+        await fetchOverallPlans();
+      }
+    },
+    [deleteOverallPlanMain, fetchOverallPlans]
+  );
 
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -165,6 +190,11 @@ const Overallplan: React.FC = () => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
+
+  const visibleRows = useMemo(() => {
+    const start = page * rowsPerPage;
+    return filteredRows.slice(start, start + rowsPerPage);
+  }, [filteredRows, page, rowsPerPage]);
 
   return (
     <>
@@ -223,54 +253,51 @@ const Overallplan: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {loading
-                    ? // 🔥 แสดง Skeleton 8 แถว (หรือจะเพิ่ม/ลดจำนวนก็ได้)
-                      [...Array(8)].map((_, i) => (
-                        <TableRow key={i}>
-                          {columns.map((col) => (
-                            <TableCell key={col.id} align={col.align}>
-                              <Skeleton
-                                variant="rectangular"
-                                height={20}
-                                sx={{ borderRadius: 1 }}
-                              />
+                  {loading ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        align="center"
+                        sx={{ py: 6 }}
+                      >
+                        <CircularProgress />
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredRows.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        align="center"
+                        sx={{ py: 6 }}
+                      >
+                        データがありません
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    visibleRows.map((row, index) => (
+                      <TableRow key={index} hover role="checkbox" tabIndex={-1}>
+                        {columns.map((column) => {
+                          const value = row[column.id as keyof Data];
+                          return (
+                            <TableCell key={column.id} align={column.align}>
+                              {column.id === "detail" ? (
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    justifyContent: "flex-end",
+                                  }}
+                                >
+                                  {value}
+                                </Box>
+                              ) : (
+                                value
+                              )}
                             </TableCell>
-                          ))}
-                        </TableRow>
-                      ))
-                    : filteredRows
-                        .slice(
-                          page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
-                        )
-                        .map((row, index) => (
-                          <TableRow
-                            hover
-                            role="checkbox"
-                            tabIndex={-1}
-                            key={index}
-                          >
-                            {columns.map((column) => {
-                              const value = row[column.id];
-                              return (
-                                <TableCell key={column.id} align={column.align}>
-                                  {column.id === "detail" ? (
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        justifyContent: "flex-end",
-                                      }}
-                                    >
-                                      {value}
-                                    </div>
-                                  ) : (
-                                    value
-                                  )}
-                                </TableCell>
-                              );
-                            })}
-                          </TableRow>
-                        ))}
+                          );
+                        })}
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>

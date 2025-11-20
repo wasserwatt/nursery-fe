@@ -112,11 +112,13 @@ export const OverallPlanProvider = ({ children }: { children: ReactNode }) => {
     setSocket(s);
 
     const handleCreated = (plan: OverallPlan) => {
+      //  console.log("Socket created:", plan); 
       setPlans((prev) =>
         prev.some((p) => p.id === plan.id) ? prev : [plan, ...prev]
       );
     };
     const handleUpdated = (plan: OverallPlan) => {
+      // console.log("Socket updated:", plan);
       setPlans((prev) => prev.map((p) => (p.id === plan.id ? plan : p)));
     };
     const handleDeleted = (id: string) => {
