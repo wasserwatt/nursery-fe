@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -6,280 +6,436 @@ import {
   TextField,
   Button,
   Grid,
-  Tabs,
-  Tab,
   Card,
   CardContent,
-  Chip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Alert,
   InputAdornment,
   MenuItem,
+  Chip,
+  IconButton,
+  Stack,
+  Paper,
+  Tooltip,
+  Fade,
+  Zoom,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Tooltip
+  Divider,
+  styled
 } from '@mui/material';
 import {
   Save,
-  Add,
-  Close,
-  Schedule,
   CheckCircle,
-  Description,
   Business,
   Person,
   CalendarToday,
+  Info,
+  Public,
+  Add,
+  Delete,
+  Print,
+  Clear,
   Edit,
+  Schedule,
+  School,
+  FamilyRestroom,
+  EmojiObjects,
+  Favorite,
   ArrowBack,
   ExpandMore,
-  Info,
-  Public
+  AccessTime,
+  HealthAndSafety,
+  Groups,
+  Nature,
+  Chat,
+  Palette
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import ContentMain from "../content/Content";
-import { useTranslation } from 'react-i18next'; // ✅ เพิ่ม i18n
-// Theme configuration
+import { useTranslation } from 'react-i18next';
+
+// Enhanced Theme Configuration
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
+      main: '#667eea',
+      light: '#8e9ff5',
+      dark: '#5568d3',
     },
     secondary: {
-      main: '#9c27b0',
-      light: '#ba68c8',
-      dark: '#7b1fa2',
+      main: '#764ba2',
+      light: '#9c68c8',
+      dark: '#5a3780',
     },
     success: {
-      main: '#2e7d32',
-      light: '#4caf50',
-      dark: '#1b5e20',
+      main: '#4CAF50',
+    },
+    error: {
+      main: '#f44336',
     },
     warning: {
-      main: '#ed6c02',
-      light: '#ff9800',
-      dark: '#e65100',
+      main: '#FFC107',
     },
   },
+  typography: {
+    fontFamily: '"Noto Sans JP", "Sarabun", "Roboto", sans-serif',
+  },
   components: {
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          borderRadius: '16px',
-          backdropFilter: 'blur(10px)',
-        },
-      },
-    },
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: '20px',
+          borderRadius: '12px',
           textTransform: 'none',
           fontWeight: 600,
+          padding: '10px 24px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
+          }
         },
       },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: '16px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        }
+      }
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: '12px',
+        }
+      }
     },
     MuiTextField: {
       styleOverrides: {
         root: {
-          '& .MuiInputBase-input': {
-            fontSize: '14px'
-          },
-          '& .MuiInputLabel-root': {
-            fontSize: '14px'
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '10px',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            },
+            '&.Mui-focused': {
+              boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)',
+            }
           }
         }
-      },
+      }
     },
+    MuiAccordion: {
+      styleOverrides: {
+        root: {
+          borderRadius: '16px !important',
+          marginBottom: '16px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          '&:before': {
+            display: 'none',
+          },
+          '&.Mui-expanded': {
+            margin: '0 0 16px 0',
+          }
+        }
+      }
+    }
   },
 });
 
-// Types
+// Types for Age 0
+interface PeriodDataAge0 {
+  yougo: string;
+  kyouiku: string;
+  life: string;
+  attitude: string;
+  support: string;
+}
+
+interface PeriodAge0 {
+  id: number;
+  name: string;
+  range: string;
+  status: 'empty' | 'partial' | 'completed';
+  data: PeriodDataAge0;
+}
+
+// Types for Age 1-5
+interface PeriodDataAge1to5 {
+  yougo: string;
+  kyouiku: string;
+  health: string;
+  humanRelations: string;
+  environment: string;
+  language: string;
+  expression: string;
+  support: string;
+  familyCooperation: string;
+}
+
+interface PeriodAge1to5 {
+  id: number;
+  name: string;
+  range: string;
+  status: 'empty' | 'partial' | 'completed';
+  data: PeriodDataAge1to5;
+}
+
 interface HeaderData {
   year: string;
   classroom: string;
   age: string;
   responsiblePerson: string;
   annualGoal: string;
-  developmentalProcess1: string;
-  developmentalProcess2: string;
-  developmentalProcess3: string;
 }
 
-interface GlobalFieldsData {
-  familyCommunityCooperation: string;
-  evaluationReflection: string;
-}
-
-interface TabData {
-  id: string | null;
-  nursing: string;
-  education: string;
-  lifeStability: string;
-  developmentPerspective: string;
-  nutritionEducation: string;
-  status: 'empty' | 'draft' | 'completed';
-  headerId: string | null;
-  lastSaved?: Date;
-  startMonth: number;
-  endMonth: number;
-}
-
-interface TabInfo {
-  id: number;
-  name: string;
-  protected: boolean;
-}
-
-interface ProgressStep {
-  id: number;
-  label: string;
-  status: 'pending' | 'active' | 'completed' | 'error';
-}
-
-// Classroom options (Animal names)
+// Options
 const classroomOptions = [
   { value: 'ぺんぎん', label: 'ぺんぎん (เพนกวิน)' },
   { value: 'しまうま', label: 'しまうま (ม้าลาย)' },
   { value: 'ぞう', label: 'ぞう (ช้าง)' },
 ];
 
-// Responsible person options
 const responsiblePersonOptions = [
   { value: '田中先生', label: '田中先生 (ทานากะ เซนเซ)' },
   { value: '佐藤先生', label: '佐藤先生 (ซาโตะ เซนเซ)' },
   { value: '鈴木先生', label: '鈴木先生 (ซูซูกิ เซนเซ)' },
 ];
 
+const ageOptions = [
+  { value: '0', label: '0歳' },
+  { value: '1', label: '1歳' },
+  { value: '2', label: '2歳' },
+  { value: '3', label: '3歳' },
+  { value: '4', label: '4歳' },
+  { value: '5', label: '5歳' }
+];
+
+const romanNumerals = ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', 'Ⅴ', 'Ⅵ', 'Ⅶ', 'Ⅷ', 'Ⅸ', 'Ⅹ'];
+
 const AnnualplanAdd: React.FC = () => {
+  const { t } = useTranslation();
+  
   // State Management
-  const [currentTab, setCurrentTab] = useState<number>(0);
+  const [expandedPeriods, setExpandedPeriods] = useState<number[]>([0]);
   const [headerData, setHeaderData] = useState<HeaderData>({
     year: new Date().getFullYear().toString(),
     classroom: '',
-    age: '',
+    age: '0',
     responsiblePerson: '',
-    annualGoal: '',
-    developmentalProcess1: '',
-    developmentalProcess2: '',
-    developmentalProcess3: ''
-  });
-
-  const [globalFields, setGlobalFields] = useState<GlobalFieldsData>({
-    familyCommunityCooperation: '',
-    evaluationReflection: ''
+    annualGoal: ''
   });
   
-  const [tabsData, setTabsData] = useState<Record<number, TabData>>({
-    0: {
-      id: null,
-      nursing: '',
-      education: '',
-      lifeStability: '',
-      developmentPerspective: '',
-      nutritionEducation: '',
+  // State for Age 0 periods
+  const [periodsAge0, setPeriodsAge0] = useState<PeriodAge0[]>([
+    {
+      id: 1,
+      name: 'Ⅰ期',
+      range: '3か月～6か月',
       status: 'empty',
-      headerId: null,
-      startMonth: 1,
-      endMonth: 3
+      data: {
+        yougo: '',
+        kyouiku: '',
+        life: '',
+        attitude: '',
+        support: ''
+      }
     },
-    1: {
-      id: null,
-      nursing: '',
-      education: '',
-      lifeStability: '',
-      developmentPerspective: '',
-      nutritionEducation: '',
+    {
+      id: 2,
+      name: 'Ⅱ期',
+      range: '6か月～9か月',
       status: 'empty',
-      headerId: null,
-      startMonth: 4,
-      endMonth: 6
-    },
-    2: {
-      id: null,
-      nursing: '',
-      education: '',
-      lifeStability: '',
-      developmentPerspective: '',
-      nutritionEducation: '',
-      status: 'empty',
-      headerId: null,
-      startMonth: 7,
-      endMonth: 9
-    },
-    3: {
-      id: null,
-      nursing: '',
-      education: '',
-      lifeStability: '',
-      developmentPerspective: '',
-      nutritionEducation: '',
-      status: 'empty',
-      headerId: null,
-      startMonth: 10,
-      endMonth: 12
+      data: {
+        yougo: '',
+        kyouiku: '',
+        life: '',
+        attitude: '',
+        support: ''
+      }
     }
-  });
-  
-  const [tabs, setTabs] = useState<TabInfo[]>([
-    { id: 0, name: 'Ⅰ期', protected: true },
-    { id: 1, name: 'Ⅱ期', protected: true },
-    { id: 2, name: 'Ⅲ期', protected: true },
-    { id: 3, name: 'Ⅳ期', protected: true }
   ]);
-  
-  // Status States
-  const [isHeaderSaved, setIsHeaderSaved] = useState<boolean>(false);
-  const [headerSavedId, setHeaderSavedId] = useState<string | null>(null);
-  const [headerSaveStatus, setHeaderSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [submitProgress, setSubmitProgress] = useState<ProgressStep[]>([]);
-  const [showProgress, setShowProgress] = useState<boolean>(false);
-  
-  // Modal States
-  const [showAddModal, setShowAddModal] = useState<boolean>(false);
-  const [newTabName, setNewTabName] = useState<string>('');
-  
-  // UI States
-  const [expandedSections, setExpandedSections] = useState({
-    basic: true
-  });
-  
-  // Age options for dropdown
-  const ageOptions = [
-    { value: '0', label: '0歳' },
-    { value: '1', label: '1歳' },
-    { value: '2', label: '2歳' },
-    { value: '3', label: '3歳' },
-    { value: '4', label: '4歳' },
-    { value: '5', label: '5歳' }
-  ];
 
-  // Utility Functions
-  const getStatusColor = (status: string) => {
+  // State for Age 1-5 periods
+  const [periodsAge1to5, setPeriodsAge1to5] = useState<PeriodAge1to5[]>([
+    {
+      id: 1,
+      name: 'Ⅰ期',
+      range: '4月～6月',
+      status: 'empty',
+      data: {
+        yougo: '',
+        kyouiku: '',
+        health: '',
+        humanRelations: '',
+        environment: '',
+        language: '',
+        expression: '',
+        support: '',
+        familyCooperation: ''
+      }
+    },
+    {
+      id: 2,
+      name: 'Ⅱ期',
+      range: '7月～9月',
+      status: 'empty',
+      data: {
+        yougo: '',
+        kyouiku: '',
+        health: '',
+        humanRelations: '',
+        environment: '',
+        language: '',
+        expression: '',
+        support: '',
+        familyCooperation: ''
+      }
+    }
+  ]);
+
+  const [nextPeriodId, setNextPeriodId] = useState<number>(3);
+  const [showSuccess, setShowSuccess] = useState<boolean>(false);
+
+  // Determine which form to show
+  const isAge0 = headerData.age === '0';
+  const isAge1to5 = ['1', '2', '3', '4', '5'].includes(headerData.age);
+
+  // Get current periods based on age
+  const getCurrentPeriods = (): (PeriodAge0 | PeriodAge1to5)[] => {
+    if (isAge0) return periodsAge0;
+    if (isAge1to5) return periodsAge1to5;
+    return [];
+  };
+
+  // Reset periods when age changes
+  useEffect(() => {
+    if (headerData.age) {
+      setExpandedPeriods([0]);
+      setNextPeriodId(3);
+      
+      if (isAge0) {
+        setPeriodsAge0([
+          {
+            id: 1,
+            name: 'Ⅰ期',
+            range: '3か月～6か月',
+            status: 'empty',
+            data: {
+              yougo: '',
+              kyouiku: '',
+              life: '',
+              attitude: '',
+              support: ''
+            }
+          },
+          {
+            id: 2,
+            name: 'Ⅱ期',
+            range: '6か月～9か月',
+            status: 'empty',
+            data: {
+              yougo: '',
+              kyouiku: '',
+              life: '',
+              attitude: '',
+              support: ''
+            }
+          }
+        ]);
+      } else if (isAge1to5) {
+        setPeriodsAge1to5([
+          {
+            id: 1,
+            name: 'Ⅰ期',
+            range: '4月～6月',
+            status: 'empty',
+            data: {
+              yougo: '',
+              kyouiku: '',
+              health: '',
+              humanRelations: '',
+              environment: '',
+              language: '',
+              expression: '',
+              support: '',
+              familyCooperation: ''
+            }
+          },
+          {
+            id: 2,
+            name: 'Ⅱ期',
+            range: '7月～9月',
+            status: 'empty',
+            data: {
+              yougo: '',
+              kyouiku: '',
+              health: '',
+              humanRelations: '',
+              environment: '',
+              language: '',
+              expression: '',
+              support: '',
+              familyCooperation: ''
+            }
+          }
+        ]);
+      }
+    }
+  }, [headerData.age]);
+
+  const togglePeriod = (index: number) => {
+    setExpandedPeriods(prev => 
+      prev.includes(index) 
+        ? prev.filter(i => i !== index) 
+        : [...prev, index]
+    );
+  };
+
+  const getStatusColor = (status: 'empty' | 'partial' | 'completed') => {
     switch (status) {
       case 'completed': return 'success';
-      case 'draft': return 'warning';
-      default: return 'default';
+      case 'partial': return 'warning';
+      case 'empty': return 'default';
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: 'empty' | 'partial' | 'completed') => {
     switch (status) {
-      case 'completed': return <CheckCircle />;
-      case 'draft': return <Edit />;
-      default: return <Schedule />;
+      case 'completed': return <CheckCircle fontSize="small" />;
+      case 'partial': return <Edit fontSize="small" />;
+      case 'empty': return <Schedule fontSize="small" />;
     }
   };
 
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setCurrentTab(newValue);
+  const getStatusText = (status: 'empty' | 'partial' | 'completed') => {
+    switch (status) {
+      case 'completed': return '完了';
+      case 'partial': return '編集中';
+      case 'empty': return '未入力';
+    }
+  };
+
+  const calculateStatusAge0 = (data: PeriodDataAge0): 'empty' | 'partial' | 'completed' => {
+    const fields = Object.values(data);
+    const filledFields = fields.filter(field => field.trim() !== '').length;
+    
+    if (filledFields === 0) return 'empty';
+    if (filledFields === fields.length) return 'completed';
+    return 'partial';
+  };
+
+  const calculateStatusAge1to5 = (data: PeriodDataAge1to5): 'empty' | 'partial' | 'completed' => {
+    const fields = Object.values(data);
+    const filledFields = fields.filter(field => field.trim() !== '').length;
+    
+    if (filledFields === 0) return 'empty';
+    if (filledFields === fields.length) return 'completed';
+    return 'partial';
   };
 
   const handleHeaderDataChange = (field: keyof HeaderData) => (
@@ -291,806 +447,873 @@ const AnnualplanAdd: React.FC = () => {
     }));
   };
 
-  const handleGlobalFieldsChange = (field: keyof GlobalFieldsData) => (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  // Handle data change for Age 0
+  const handlePeriodDataChangeAge0 = (periodId: number, field: keyof PeriodDataAge0) => (
+    event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
-    setGlobalFields(prev => ({
-      ...prev,
-      [field]: event.target.value
+    setPeriodsAge0(prev => prev.map(period => {
+      if (period.id === periodId) {
+        const updatedData = { ...period.data, [field]: event.target.value };
+        return {
+          ...period,
+          data: updatedData,
+          status: calculateStatusAge0(updatedData)
+        };
+      }
+      return period;
     }));
   };
 
-  const handleTabDataChange = (tabId: number, field: keyof TabData) => (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  // Handle data change for Age 1-5
+  const handlePeriodDataChangeAge1to5 = (periodId: number, field: keyof PeriodDataAge1to5) => (
+    event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
-    const value = event.target.value;
-    setTabsData(prev => ({
-      ...prev,
-      [tabId]: {
-        ...prev[tabId],
-        [field]: field === 'startMonth' || field === 'endMonth' ? parseInt(value) || 0 : value
+    setPeriodsAge1to5(prev => prev.map(period => {
+      if (period.id === periodId) {
+        const updatedData = { ...period.data, [field]: event.target.value };
+        return {
+          ...period,
+          data: updatedData,
+          status: calculateStatusAge1to5(updatedData)
+        };
       }
+      return period;
     }));
   };
 
-  // API Simulation Functions
-  const saveHeaderData = async (_data: HeaderData): Promise<{ success: boolean; id: string; message: string }> => {
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    return {
-      success: true,
-      id: `HDR_${Date.now()}`,
-      message: 'Header saved successfully'
-    };
-  };
-
-  const saveIndividualTab = async (tabId: number, _data: TabData): Promise<{ success: boolean; id: string; message: string }> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    return {
-      success: true,
-      id: `TAB_${tabId}_${Date.now()}`,
-      message: `Tab ${tabId} saved successfully`
-    };
-  };
-
-  const saveBulkTabs = async (tabId: number, _data: TabData): Promise<{ success: boolean; id: string; message: string }> => {
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    return {
-      success: true,
-      id: `BULK_TAB_${tabId}_${Date.now()}`,
-      message: `Tab ${tabId} submitted successfully`
-    };
-  };
-
-  // Header Save Handler
-  const handleSaveHeader = async () => {
-    if (!headerData.classroom || !headerData.age) {
-      alert('กรุณากรอกข้อมูลห้องเรียนและอายุ | 教室と年齢を入力してください');
-      return;
-    }
-
-    setHeaderSaveStatus('saving');
-    try {
-      const result = await saveHeaderData(headerData);
-      if (result.success) {
-        setHeaderSavedId(result.id);
-        setIsHeaderSaved(true);
-        setHeaderSaveStatus('saved');
-        
-        // Update all tabs with header ID
-        setTabsData(prev => {
-          const updated = { ...prev };
-          Object.keys(updated).forEach(key => {
-            updated[parseInt(key)].headerId = result.id;
-          });
-          return updated;
-        });
-      }
-    } catch (error) {
-      setHeaderSaveStatus('error');
-      console.error('Header save failed:', error);
-    }
-  };
-
-  // Manual Save Tab
-  const handleSaveTab = async (tabId: number, asCompleted: boolean = false) => {
-    if (!isHeaderSaved) {
-      alert('กรุณาบันทึกข้อมูลส่วนหัวก่อน | まずヘッダー情報を保存してください');
-      return;
-    }
-
-    try {
-      const result = await saveIndividualTab(tabId, tabsData[tabId]);
-
-      if (result.success) {
-        setTabsData(prev => ({
-          ...prev,
-          [tabId]: {
-            ...prev[tabId],
-            id: result.id,
-            status: asCompleted ? 'completed' : 'draft',
-            lastSaved: new Date()
-          }
-        }));
-      }
-    } catch (error) {
-      console.error('Manual save failed:', error);
-    }
-  };
-
-  // Submit All Handler
-  const handleSubmitAll = async () => {
-    if (!isHeaderSaved) {
-      alert('กรุณาบันทึกข้อมูลส่วนหัวก่อน | まずヘッダー情報を保存してください');
-      return;
-    }
-
-    const tabsWithData = Object.entries(tabsData).filter(([_, data]) => 
-      data.nursing || data.education || data.lifeStability || 
-      data.developmentPerspective || data.nutritionEducation
-    ).map(([id]) => parseInt(id));
-
-    if (tabsWithData.length === 0) {
-      alert('ไม่มีข้อมูลในแท็บที่จะส่ง | 送信するタブのデータがありません');
-      return;
-    }
-
-    setIsSubmitting(true);
-    setShowProgress(true);
-    
-    // Initialize progress
-    const steps: ProgressStep[] = tabsWithData.map((tabId) => {
-      const tabName = tabs.find(t => t.id === tabId)?.name.replace(/📊|📈|📉|📋|📝/g, '').trim() || `Tab ${tabId}`;
-      return {
-        id: tabId,
-        label: `${tabName} を送信 | ส่ง ${tabName}`,
-        status: 'pending'
-      };
-    });
-    setSubmitProgress(steps);
-
-    try {
-      for (let i = 0; i < tabsWithData.length; i++) {
-        const tabId = tabsWithData[i];
-        
-        // Update progress to active
-        setSubmitProgress(prev => prev.map(step => 
-          step.id === tabId ? { ...step, status: 'active' } : step
-        ));
-
-        const result = await saveBulkTabs(tabId, tabsData[tabId]);
-
-        if (result.success) {
-          // Update tab data
-          setTabsData(prev => ({
-            ...prev,
-            [tabId]: {
-              ...prev[tabId],
-              id: result.id,
-              status: 'completed',
-              lastSaved: new Date()
-            }
-          }));
-
-          // Update progress to completed
-          setSubmitProgress(prev => prev.map(step => 
-            step.id === tabId ? { ...step, status: 'completed' } : step
-          ));
-
-          await new Promise(resolve => setTimeout(resolve, 500));
-        } else {
-          // Update progress to error
-          setSubmitProgress(prev => prev.map(step => 
-            step.id === tabId ? { ...step, status: 'error' } : step
-          ));
-        }
-      }
-    } catch (error) {
-      console.error('Submit all failed:', error);
-      setSubmitProgress(prev => prev.map(step => 
-        step.status === 'active' ? { ...step, status: 'error' } : step
+  const handlePeriodRangeChange = (periodId: number) => (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (isAge0) {
+      setPeriodsAge0(prev => prev.map(period => 
+        period.id === periodId
+          ? { ...period, range: event.target.value }
+          : period
       ));
-    } finally {
-      setIsSubmitting(false);
-      setTimeout(() => {
-        setShowProgress(false);
-      }, 3000);
+    } else if (isAge1to5) {
+      setPeriodsAge1to5(prev => prev.map(period => 
+        period.id === periodId
+          ? { ...period, range: event.target.value }
+          : period
+      ));
     }
   };
 
-  const addNewTab = () => {
-    if (!newTabName.trim()) return;
+  const addPeriod = () => {
+    const currentPeriods = getCurrentPeriods();
+    
+    if (currentPeriods.length >= 10) {
+      alert('⚠️ 最大10期までです。\nสูงสุด 10 ช่วงเวลา');
+      return;
+    }
 
-    const newTabId = Date.now();
-    const newTab: TabInfo = {
-      id: newTabId,
-      name: newTabName.trim(),
-      protected: false
-    };
-
-    setTabs(prev => [...prev, newTab]);
-    setTabsData(prev => ({
-      ...prev,
-      [newTabId]: {
-        id: null,
-        nursing: '',
-        education: '',
-        lifeStability: '',
-        developmentPerspective: '',
-        nutritionEducation: '',
+    if (isAge0) {
+      const newPeriod: PeriodAge0 = {
+        id: nextPeriodId,
+        name: `${romanNumerals[periodsAge0.length] || 'Ⅺ'}期`,
+        range: `${periodsAge0.length * 3 + 3}か月～${periodsAge0.length * 3 + 6}か月`,
         status: 'empty',
-        headerId: headerSavedId,
-        startMonth: 1,
-        endMonth: 3
-      }
-    }));
-
-    setNewTabName('');
-    setShowAddModal(false);
-    setCurrentTab(tabs.length);
+        data: {
+          yougo: '',
+          kyouiku: '',
+          life: '',
+          attitude: '',
+          support: ''
+        }
+      };
+      setPeriodsAge0(prev => [...prev, newPeriod]);
+    } else if (isAge1to5) {
+      const newPeriod: PeriodAge1to5 = {
+        id: nextPeriodId,
+        name: `${romanNumerals[periodsAge1to5.length] || 'Ⅺ'}期`,
+        range: `${periodsAge1to5.length * 3 + 1}月～${periodsAge1to5.length * 3 + 3}月`,
+        status: 'empty',
+        data: {
+          yougo: '',
+          kyouiku: '',
+          health: '',
+          humanRelations: '',
+          environment: '',
+          language: '',
+          expression: '',
+          support: '',
+          familyCooperation: ''
+        }
+      };
+      setPeriodsAge1to5(prev => [...prev, newPeriod]);
+    }
+    
+    setNextPeriodId(prev => prev + 1);
   };
 
-  const removeTab = (tabId: number) => {
-    setTabs(prev => prev.filter(tab => tab.id !== tabId));
-    setTabsData(prev => {
-      const updated = { ...prev };
-      delete updated[tabId];
-      return updated;
-    });
+  const deletePeriod = (periodId: number) => {
+    const currentPeriods = getCurrentPeriods();
+    
+    if (currentPeriods.length <= 1) {
+      alert('⚠️ 最低でも1つの期が必要です。\nต้องมีอย่างน้อย 1 ช่วงเวลา');
+      return;
+    }
 
-    if (currentTab >= tabs.length - 1) {
-      setCurrentTab(Math.max(0, tabs.length - 2));
+    if (window.confirm('この期を削除してもよろしいですか？\nคุณต้องการลบช่วงเวลานี้หรือไม่?')) {
+      if (isAge0) {
+        setPeriodsAge0(prev => prev.filter(period => period.id !== periodId));
+      } else if (isAge1to5) {
+        setPeriodsAge1to5(prev => prev.filter(period => period.id !== periodId));
+      }
     }
   };
 
-  const toggleSection = (section: 'basic') => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
+  const saveData = () => {
+    console.log('Saving data...', {
+      headerData,
+      periods: isAge0 ? periodsAge0 : periodsAge1to5
+    });
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 3000);
   };
-  const { t } = useTranslation();
+
+  // Render Period Content for Age 0
+  const renderPeriodContentAge0 = (period: PeriodAge0) => (
+    <Stack spacing={3}>
+      {/* Period Range Edit */}
+      <TextField
+        fullWidth
+        size="small"
+        label="期間 | ช่วงเวลา"
+        value={period.range}
+        onChange={handlePeriodRangeChange(period.id)}
+      />
+
+      <Divider />
+
+      {/* ねらい Section */}
+      <Paper sx={{ p: 3, border: '2px solid #4CAF50', borderRadius: '12px' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <EmojiObjects sx={{ color: '#4CAF50' }} />
+          <Typography variant="h6" fontWeight="bold" color="#4CAF50">
+            🎯 ねらい | เป้าหมาย
+          </Typography>
+        </Box>
+        <Stack spacing={2}>
+          <TextField
+            fullWidth
+            multiline
+            rows={2}
+            label="養護 | การดูแล"
+            value={period.data.yougo}
+            onChange={handlePeriodDataChangeAge0(period.id, 'yougo')}
+            placeholder="養護のねらいを入力..."
+          />
+          <TextField
+            fullWidth
+            multiline
+            rows={2}
+            label="教育 | การศึกษา"
+            value={period.data.kyouiku}
+            onChange={handlePeriodDataChangeAge0(period.id, 'kyouiku')}
+            placeholder="教育のねらいを入力..."
+          />
+        </Stack>
+      </Paper>
+
+      {/* 配慮 Section */}
+      <Paper sx={{ p: 3, border: '2px solid #2754b0', borderRadius: '12px' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <School sx={{ color: '#2754b0' }} />
+          <Typography variant="h6" fontWeight="bold" color="#2754b0">
+            📝 配慮 | การพิจารณา
+          </Typography>
+        </Box>
+        <Stack spacing={2}>
+          <TextField
+            fullWidth
+            multiline
+            rows={5}
+            label="養護 | การดูแล"
+            value={period.data.life}
+            onChange={handlePeriodDataChangeAge0(period.id, 'life')}
+            placeholder="養護..."
+          />
+          <TextField
+            fullWidth
+            multiline
+            rows={5}
+            label="教育 | การศึกษา"
+            value={period.data.attitude}
+            onChange={handlePeriodDataChangeAge0(period.id, 'attitude')}
+            placeholder="教育..."
+          />
+        </Stack>
+      </Paper>
+
+      {/* 内容 Section */}
+      <Paper sx={{ p: 3, border: '2px solid #9C27B0', borderRadius: '12px' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <School sx={{ color: '#9C27B0' }} />
+          <Typography variant="h6" fontWeight="bold" color="#9C27B0">
+            📝 内容 | เนื้อหา
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <HealthAndSafety sx={{ color: '#9C27B0' }} />
+          <Typography  color="#9C27B0">
+            養護 | การพยายบาล
+          </Typography>
+        </Box>
+        <Stack spacing={2}>
+          <TextField
+            fullWidth
+            multiline
+            rows={6}
+            label="生命の保持　情緒の安定| การรักษาชีวิตและความมั่นคงทางอารมณ์"
+            value={period.data.life}
+            onChange={handlePeriodDataChangeAge0(period.id, 'life')}
+            placeholder="生命の保持　情緒の安定..."
+          />
+        </Stack>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 , mb: 2 }}>
+          <School sx={{ color: '#9C27B0' }} />
+          <Typography  color="#9C27B0">
+            教育 | การศึกษา
+          </Typography>
+        </Box>
+        <Stack spacing={2}>
+          <TextField
+            fullWidth
+            multiline
+            rows={12}
+            label="身体的発達に関する視点　社会的発達に関する視点　精神的発達に関する視点 | การพัฒนาด้านร่างกาย ด้านสังคม ด้านจิตใจ"
+            value={period.data.life}
+            onChange={handlePeriodDataChangeAge0(period.id, 'life')}
+            placeholder="身体的発達に関する視点　社会的発達に関する視点　精神的発達に関する視点"
+          />
+        </Stack>
+      </Paper>
+
+      {/* Delete Button */}
+      {periodsAge0.length > 1 && (
+        <Button
+          fullWidth
+          variant="outlined"
+          color="error"
+          startIcon={<Delete />}
+          onClick={() => deletePeriod(period.id)}
+        >
+          この期を削除 | ลบช่วงเวลานี้
+        </Button>
+      )}
+    </Stack>
+  );
+
+  // Render Period Content for Age 1-5
+  const renderPeriodContentAge1to5 = (period: PeriodAge1to5) => (
+    <Stack spacing={3}>
+      {/* Period Range Edit */}
+      <TextField
+        fullWidth
+        size="small"
+        label="期間 | ช่วงเวลา"
+        value={period.range}
+        onChange={handlePeriodRangeChange(period.id)}
+      />
+
+      <Divider />
+
+      {/* ねらい Section */}
+      <Paper sx={{ p: 3, border: '2px solid #4CAF50', borderRadius: '12px' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <EmojiObjects sx={{ color: '#4CAF50' }} />
+          <Typography variant="h6" fontWeight="bold" color="#4CAF50">
+            🎯 ねらい | เป้าหมาย
+          </Typography>
+        </Box>
+        <Stack spacing={2}>
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="養護 | การดูแล"
+            value={period.data.yougo}
+            onChange={handlePeriodDataChangeAge1to5(period.id, 'yougo')}
+            placeholder="養護のねらいを入力..."
+          />
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="教育 | การศึกษา"
+            value={period.data.kyouiku}
+            onChange={handlePeriodDataChangeAge1to5(period.id, 'kyouiku')}
+            placeholder="教育のねらいを入力..."
+          />
+        </Stack>
+      </Paper>
+
+      {/* 5領域 Section */}
+      <Paper sx={{ p: 3, border: '2px solid #2196F3', borderRadius: '12px' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <School sx={{ color: '#2196F3' }} />
+          <Typography variant="h6" fontWeight="bold" color="#2196F3">
+            📚 5領域 | 5 ด้านการพัฒนา
+          </Typography>
+        </Box>
+        <Stack spacing={2}>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <HealthAndSafety sx={{ color: '#03A9F4', fontSize: 20 }} />
+              <Typography variant="subtitle2" fontWeight="bold">
+                健康 | สุขภาพ
+              </Typography>
+            </Box>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              value={period.data.health}
+              onChange={handlePeriodDataChangeAge1to5(period.id, 'health')}
+              placeholder="健康を入力..."
+            />
+          </Box>
+
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Groups sx={{ color: '#03A9F4', fontSize: 20 }} />
+              <Typography variant="subtitle2" fontWeight="bold">
+                人間関係 | มนุษยสัมพันธ์
+              </Typography>
+            </Box>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              value={period.data.humanRelations}
+              onChange={handlePeriodDataChangeAge1to5(period.id, 'humanRelations')}
+              placeholder="人間関係を入力..."
+            />
+          </Box>
+
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Nature sx={{ color: '#03A9F4', fontSize: 20 }} />
+              <Typography variant="subtitle2" fontWeight="bold">
+                環境 | สิ่งแวดล้อม
+              </Typography>
+            </Box>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              value={period.data.environment}
+              onChange={handlePeriodDataChangeAge1to5(period.id, 'environment')}
+              placeholder="環境を入力..."
+            />
+          </Box>
+
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Chat sx={{ color: '#03A9F4', fontSize: 20 }} />
+              <Typography variant="subtitle2" fontWeight="bold">
+                言葉 | ภาษา
+              </Typography>
+            </Box>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              value={period.data.language}
+              onChange={handlePeriodDataChangeAge1to5(period.id, 'language')}
+              placeholder="言葉を入力..."
+            />
+          </Box>
+
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Palette sx={{ color: '#03A9F4', fontSize: 20 }} />
+              <Typography variant="subtitle2" fontWeight="bold">
+                表現 | การแสดงออก
+              </Typography>
+            </Box>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              value={period.data.expression}
+              onChange={handlePeriodDataChangeAge1to5(period.id, 'expression')}
+              placeholder="表現を入力..."
+            />
+          </Box>
+        </Stack>
+      </Paper>
+
+      {/* 環境構成と援助 Section */}
+      <Paper sx={{ p: 3, border: '2px solid #FF9800', borderRadius: '12px' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <FamilyRestroom sx={{ color: '#FF9800' }} />
+          <Typography variant="h6" fontWeight="bold" color="#FF9800">
+            🏡 環境構成と援助 | สภาพแวดล้อมและการช่วยเหลือ
+          </Typography>
+        </Box>
+        <TextField
+          fullWidth
+          multiline
+          rows={4}
+          value={period.data.support}
+          onChange={handlePeriodDataChangeAge1to5(period.id, 'support')}
+          placeholder="環境構成と援助を入力..."
+        />
+      </Paper>
+
+      {/* 家庭との連携 Section */}
+      <Paper sx={{ p: 3, border: '2px solid #E91E63', borderRadius: '12px' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <Favorite sx={{ color: '#E91E63' }} />
+          <Typography variant="h6" fontWeight="bold" color="#E91E63">
+            👨‍👩‍👧 家庭との連携 | ความร่วมมือกับครอบครัว
+          </Typography>
+        </Box>
+        <TextField
+          fullWidth
+          multiline
+          rows={4}
+          value={period.data.familyCooperation}
+          onChange={handlePeriodDataChangeAge1to5(period.id, 'familyCooperation')}
+          placeholder="家庭との連携を入力..."
+        />
+      </Paper>
+
+      {/* Delete Button */}
+      {periodsAge1to5.length > 1 && (
+        <Button
+          fullWidth
+          variant="outlined"
+          color="error"
+          startIcon={<Delete />}
+          onClick={() => deletePeriod(period.id)}
+        >
+          この期を削除 | ลบช่วงเวลานี้
+        </Button>
+      )}
+    </Stack>
+  );
+
+  const currentPeriods = getCurrentPeriods();
 
   return (
     <ThemeProvider theme={theme}>
       <ContentMain>
-        <Box sx={{ minHeight: '100vh', py: 4 }}>
-          <Container maxWidth="xl">
+        {/* Success Notification */}
+        <Zoom in={showSuccess}>
+          <Box sx={{
+            position: 'fixed',
+            top: 20,
+            right: 20,
+            background: 'linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%)',
+            color: 'white',
+            padding: '16px 24px',
+            borderRadius: '16px',
+            boxShadow: '0 8px 32px rgba(76, 175, 80, 0.4)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2
+          }}>
+            <CheckCircle sx={{ fontSize: 28 }} />
+            <Typography variant="body1" fontWeight="bold">
+              บันทึกสำเร็จ! | 保存しました
+            </Typography>
+          </Box>
+        </Zoom>
 
-            {/* Header Section */}
-            <Card sx={{ mb: 3, border: '2px solid #2196f3' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                  <Public color="primary" />
-                  <Typography variant="h6" fontWeight="600">
-                    {t('annualplanadd.header_main_title')}
+        {/* Top Bar */}
+        <Fade in={true}>
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 3
+              }}>
+                <School sx={{ fontSize: 40, mr: 2, color: 'primary.main' }} />
+                <Box>
+                  <Typography variant="h4" fontWeight="bold" color="primary">
+                    年間指導計画
                   </Typography>
-                  <Tooltip title={t('annualplanadd.header_tooltip')}>
-                    <Info color="info" />
-                  </Tooltip>
-                </Box>
-
-                {/* Basic Header Fields */}
-                <Accordion expanded={expandedSections.basic} onChange={() => toggleSection('basic')}>
-                  <AccordionSummary expandIcon={<ExpandMore />}>
-                    <Typography fontWeight="600">{t('annualplanadd.basic_info')}</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Grid container spacing={2} sx={{ mb: 3 }}>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                          size="small"
-                          fullWidth
-                          label={t('annualplanadd.field_year')}
-                          value={headerData.year}
-                          onChange={handleHeaderDataChange('year')}
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <CalendarToday sx={{ fontSize: 18 }} />
-                              </InputAdornment>
-                            )
-                          }}
-                        />
-                      </Grid>
-
-                      <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                          size="small"
-                          fullWidth
-                          select
-                          label={t('annualplanadd.field_classroom')}
-                          value={headerData.classroom}
-                          onChange={handleHeaderDataChange('classroom')}
-                          required
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <Business sx={{ fontSize: 18 }} />
-                              </InputAdornment>
-                            )
-                          }}
-                        >
-                          {classroomOptions.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                              {option.label}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      </Grid>
-
-                      <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                          size="small"
-                          fullWidth
-                          select
-                          label={t('annualplanadd.field_age')}
-                          value={headerData.age}
-                          onChange={handleHeaderDataChange('age')}
-                          required
-                          error={!headerData.age && headerSaveStatus === 'error'}
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <Person sx={{ fontSize: 18 }} />
-                              </InputAdornment>
-                            )
-                          }}
-                        >
-                          {ageOptions.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                              {option.label}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      </Grid>
-
-                      <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                          size="small"
-                          fullWidth
-                          select
-                          label={t('annualplanadd.field_responsible')}
-                          value={headerData.responsiblePerson}
-                          onChange={handleHeaderDataChange('responsiblePerson')}
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <Person sx={{ fontSize: 18 }} />
-                              </InputAdornment>
-                            )
-                          }}
-                        >
-                          {responsiblePersonOptions.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                              {option.label}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      </Grid>
-                    </Grid>
-
-                    {/* Annual Goal */}
-                    <Grid container>
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          multiline
-                          rows={4}
-                          label={t('annualplanadd.annual_goal_label')}
-                          value={headerData.annualGoal}
-                          onChange={handleHeaderDataChange('annualGoal')}
-                          placeholder={t('annualplanadd.annual_goal_ph')}
-                          sx={{ "& .MuiInputBase-root": { alignItems: "flex-start" } }}
-                        />
-                      </Grid>
-                    </Grid>
-
-                    {/* Developmental Process Fields */}
-                    {(headerData.age === '1' || headerData.age === '2') && (
-                      <>
-                        <Box sx={{ mt: 3 }}>
-                          <Typography fontWeight="600" sx={{ mb: 2, color: "primary.main", textAlign: "left" }}>
-                            {t('annualplanadd.dev_process_title')}
-                          </Typography>
-                          <Typography sx={{ mb: 1, color: "primary.main", textAlign: "left" }}>
-                            {t('annualplanadd.child_growth_title')}
-                          </Typography>
-
-                          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 2 }}>
-                            {headerData.age === '1' ? (
-                              <>
-                                <Typography sx={{ fontSize: "12px" }}>{t('annualplanadd.age_m1')}</Typography>
-                                <Typography sx={{ fontSize: "12px" }}>{t('annualplanadd.age_m1_6')}</Typography>
-                                <Typography sx={{ fontSize: "12px" }}>{t('annualplanadd.age_m2')}</Typography>
-                                <Typography sx={{ fontSize: "12px" }}>{t('annualplanadd.age_m2_11')}</Typography>
-                              </>
-                            ) : (
-                              <>
-                                <Typography sx={{ fontSize: "12px" }}>{t('annualplanadd.age2_m2')}</Typography>
-                                <Typography sx={{ fontSize: "12px" }}>{t('annualplanadd.age2_m2_6')}</Typography>
-                                <Typography sx={{ fontSize: "12px" }}>{t('annualplanadd.age2_m3')}</Typography>
-                                <Typography sx={{ fontSize: "12px" }}>{t('annualplanadd.age2_m3_11')}</Typography>
-                              </>
-                            )}
-                          </Box>
-                        </Box>
-
-                        <Box sx={{ mt: 3 }}>
-                          <Grid container spacing={2}>
-                            <Grid item xs={12} md={4}>
-                              <TextField
-                                fullWidth multiline rows={4}
-                                label={t('annualplanadd.dev1_label')}
-                                value={headerData.developmentalProcess1}
-                                onChange={handleHeaderDataChange('developmentalProcess1')}
-                                placeholder={t('annualplanadd.dev1_ph')}
-                                sx={{ "& .MuiInputBase-root": { alignItems: "flex-start" } }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                              <TextField
-                                fullWidth multiline rows={4}
-                                label={t('annualplanadd.dev2_label')}
-                                value={headerData.developmentalProcess2}
-                                onChange={handleHeaderDataChange('developmentalProcess2')}
-                                placeholder={t('annualplanadd.dev2_ph')}
-                                sx={{ "& .MuiInputBase-root": { alignItems: "flex-start" } }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                              <TextField
-                                fullWidth multiline rows={4}
-                                label={t('annualplanadd.dev3_label')}
-                                value={headerData.developmentalProcess3}
-                                onChange={handleHeaderDataChange('developmentalProcess3')}
-                                placeholder={t('annualplanadd.dev3_ph')}
-                                sx={{ "& .MuiInputBase-root": { alignItems: "flex-start" } }}
-                              />
-                            </Grid>
-                          </Grid>
-                        </Box>
-                      </>
-                    )}
-                  </AccordionDetails>
-                </Accordion>
-
-                {/* Save Header Button */}
-                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 3 }}>
-                  <Button variant="outlined" href="/report/annualplan" startIcon={<ArrowBack />}>
-                    {t('annualplanadd.btn_back')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    startIcon={headerSaveStatus === 'saving' ? <Schedule className="animate-spin" /> : <Save />}
-                    disabled={headerSaveStatus === 'saving'}
-                    onClick={handleSaveHeader}
-                    sx={{ background: 'linear-gradient(45deg, #4caf50, #45a049)', px: 4 }}
-                  >
-                    {headerSaveStatus === 'saving' ? t('annualplanadd.btn_saving') : t('annualplanadd.btn_save_main')}
-                  </Button>
-                </Box>
-
-                {/* Header Status */}
-                {headerSaveStatus !== 'idle' && (
-                  <Box sx={{ mt: 3 }}>
-                    <Alert
-                      severity={
-                        headerSaveStatus === 'saved' ? 'success' :
-                        headerSaveStatus === 'error' ? 'error' : 'info'
-                      }
-                    >
-                      {headerSaveStatus === 'saved' && t('annualplanadd.header_saved', { id: headerSavedId || '' })}
-                      {headerSaveStatus === 'error' && t('annualplanadd.header_error')}
-                      {headerSaveStatus === 'saving' && t('annualplanadd.header_saving')}
-                    </Alert>
-                  </Box>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Progress Bar */}
-            {showProgress && (
-              <Box sx={{ p: 3, backgroundColor: '#f5f5f5', borderRadius: 2, mb: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  {t('annualplanadd.progress_title')}
-                </Typography>
-                <Box sx={{ space: 2 }}>
-                  {submitProgress.map((step) => (
-                    <Box key={step.id} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                      <Box
-                        sx={{
-                          width: 24, height: 24, borderRadius: '50%', display: 'flex',
-                          alignItems: 'center', justifyContent: 'center', fontSize: '12px',
-                          fontWeight: 'bold', color: 'white',
-                          backgroundColor:
-                            step.status === 'completed' ? '#4caf50' :
-                            step.status === 'active' ? '#2196f3' :
-                            step.status === 'error' ? '#f44336' : '#9e9e9e'
-                        }}
-                      >
-                        {step.status === 'completed' ? '✓' :
-                         step.status === 'error' ? '✗' :
-                         step.status === 'active' ? '•' : '○'}
-                      </Box>
-                      <Typography
-                        color={
-                          step.status === 'completed' ? 'success.main' :
-                          step.status === 'active' ? 'primary.main' :
-                          step.status === 'error' ? 'error.main' : 'text.secondary'
-                        }
-                        fontWeight={step.status === 'active' ? 'bold' : 'normal'}
-                      >
-                        {step.label}
-                      </Typography>
-                    </Box>
-                  ))}
+                  <Typography variant="body2" color="text.secondary">
+                    แผนการสอนประจำปี | Annual Teaching Plan
+                  </Typography>
                 </Box>
               </Box>
-            )}
 
-            {/* Tabs Section */}
-            <Card sx={{ opacity: isHeaderSaved ? 1 : 0.5, pointerEvents: isHeaderSaved ? 'auto' : 'none', border: '2px solid #ff9800' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                  <Description color="warning" />
-                  <Typography variant="h6" fontWeight="600">
-                    {t('annualplanadd.detail_title')}
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: 2
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CalendarToday color="primary" />
+                  <Typography fontWeight="600">年度:</Typography>
+                  <TextField
+                    size="small"
+                    value={headerData.year}
+                    onChange={handleHeaderDataChange('year')}
+                    sx={{ 
+                      width: 100,
+                      '& input': { textAlign: 'center', fontWeight: 'bold' }
+                    }}
+                    inputProps={{ maxLength: 4 }}
+                  />
+                  <Typography fontWeight="600">年度</Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                  <AccessTime fontSize="small" />
+                  <Typography variant="body2">
+                    最終保存: 数秒前
                   </Typography>
                 </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Fade>
 
-                {/* Tab Navigation */}
-                <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 4 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                    <Tabs value={currentTab} onChange={handleTabChange} variant="scrollable" scrollButtons="auto" sx={{ flexGrow: 1 }}>
-                      {tabs.map((tab) => (
-                        <Tab
-                          key={tab.id}
-                          label={
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              {tab.name}
-                              <Chip
-                                size="small"
-                                icon={getStatusIcon(tabsData[tab.id]?.status || 'empty')}
-                                color={getStatusColor(tabsData[tab.id]?.status || 'empty') as any}
-                              />
-                              {!tab.protected && (
-                                <IconButton
-                                  size="small"
-                                  onClick={(e) => { e.stopPropagation(); removeTab(tab.id); }}
-                                  sx={{ ml: 1, color: 'error.main' }}
-                                >
-                                  <Close fontSize="small" />
-                                </IconButton>
-                              )}
-                            </Box>
-                          }
-                          sx={{ textTransform: 'none', fontWeight: 600 }}
-                        />
-                      ))}
-                    </Tabs>
-
-                    <IconButton
-                      onClick={() => setShowAddModal(true)}
-                      disabled={!isHeaderSaved}
-                      color="primary"
-                      sx={{ border: '2px dashed', borderColor: 'primary.main' }}
-                    >
-                      <Add />
-                    </IconButton>
-                  </Box>
+        {/* Main Card */}
+        <Fade in={true}>
+          <Card>
+            <CardContent>
+              {/* Basic Information */}
+              <Paper sx={{ p: 3, mb: 3, background: '#f8f9fa' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                  <Public color="primary" sx={{ fontSize: 28 }} />
+                  <Typography variant="h6" fontWeight="700">
+                    基本情報 | ข้อมูลพื้นฐาน
+                  </Typography>
                 </Box>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <TextField
+                      fullWidth
+                      select
+                      label="🏫 教室 | ห้องเรียน"
+                      value={headerData.classroom}
+                      onChange={handleHeaderDataChange('classroom')}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Business />
+                          </InputAdornment>
+                        )
+                      }}
+                    >
+                      {classroomOptions.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
 
-                {/* Tab Content */}
-                {tabs.map((tab, index) => (
-                  currentTab === index && (
-                    <Box key={tab.id}>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4, flexWrap: 'wrap' }}>
-                        <Typography fontWeight="bold">
-                          {tab.name.replace(/📊|📈|📉|📋|📝/g, "").trim()}
-                        </Typography>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <TextField
+                      fullWidth
+                      select
+                      label="👶 年齢 | อายุ"
+                      value={headerData.age}
+                      onChange={handleHeaderDataChange('age')}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Person />
+                          </InputAdornment>
+                        )
+                      }}
+                    >
+                      {ageOptions.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
 
-                        <TextField
-                          size="small"
-                          select
-                          label={t('annualplanadd.period_start')}
-                          value={tabsData[tab.id]?.startMonth || ''}
-                          onChange={handleTabDataChange(tab.id, 'startMonth')}
-                          sx={{ width: 100 }}
-                        >
-                          {[...Array(12)].map((_, i) => (
-                            <MenuItem key={i + 1} value={i + 1}>
-                              {(i + 1) + t('annualplanadd.months_suffix')}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                        <Typography> {t('annualplanadd.period_to')} </Typography>
-                        <TextField
-                          size="small"
-                          select
-                          label={t('annualplanadd.period_end')}
-                          value={tabsData[tab.id]?.endMonth || ''}
-                          onChange={handleTabDataChange(tab.id, 'endMonth')}
-                          sx={{ width: 100 }}
-                        >
-                          {[...Array(12)].map((_, i) => (
-                            <MenuItem key={i + 1} value={i + 1}>
-                              {(i + 1) + t('annualplanadd.months_suffix')}
-                            </MenuItem>
-                          ))}
-                        </TextField>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <TextField
+                      fullWidth
+                      select
+                      label="👨‍🏫 担当者 | ผู้รับผิดชอบ"
+                      value={headerData.responsiblePerson}
+                      onChange={handleHeaderDataChange('responsiblePerson')}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Person />
+                          </InputAdornment>
+                        )
+                      }}
+                    >
+                      {responsiblePersonOptions.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                </Grid>
+              </Paper>
 
-                        {tabsData[tab.id]?.lastSaved && (
-                          <Typography variant="body2" color="text.secondary">
-                            {t('annualplanadd.last_saved')}: {tabsData[tab.id].lastSaved?.toLocaleString()}
-                          </Typography>
-                        )}
-                      </Box>
+              {/* Annual Goal Section */}
+              <Fade in={true}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    background: 'linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%)',
+                    p: 3,
+                    mb: 4,
+                    border: '2px solid #ffe082',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                    <EmojiObjects sx={{ color: '#F57C00', fontSize: 32 }} />
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        color: '#f57c00',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      🎯 年間目標 | เป้าหมายประจำปี
+                    </Typography>
+                  </Box>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    value={headerData.annualGoal}
+                    onChange={handleHeaderDataChange('annualGoal')}
+                    placeholder="年間目標を入力してください..."
+                    sx={{
+                      '& .MuiInputBase-root': {
+                        background: 'white',
+                        fontSize: '14px'
+                      }
+                    }}
+                  />
+                </Paper>
+              </Fade>
 
-                      {/* Aims */}
-                      <Card sx={{ mb: 3, backgroundColor: '#e5faf5de' }}>
-                        <CardContent>
-                          <Typography fontWeight="bold" sx={{ mb: 2 }} align="left">
-                            {t('annualplanadd.aim_title')}
-                          </Typography>
-                          <Grid container spacing={2}>
-                            <Grid item xs={12} md={6}>
-                              <TextField
-                                fullWidth multiline rows={2}
-                                label={t('annualplanadd.aim_nursing_label')}
-                                value={tabsData[tab.id]?.nursing || ''}
-                                onChange={handleTabDataChange(tab.id, 'nursing')}
-                                placeholder={t('annualplanadd.aim_nursing_ph')}
-                                disabled={!isHeaderSaved}
-                              />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                              <TextField
-                                fullWidth multiline rows={2}
-                                label={t('annualplanadd.aim_education_label')}
-                                value={tabsData[tab.id]?.education || ''}
-                                onChange={handleTabDataChange(tab.id, 'education')}
-                                placeholder={t('annualplanadd.aim_education_ph')}
-                                disabled={!isHeaderSaved}
-                              />
-                            </Grid>
-                          </Grid>
-                        </CardContent>
-                      </Card>
+              {/* Form Type Info */}
+              {headerData.age && (
+                <Zoom in={true}>
+                  <Alert 
+                    severity={isAge0 ? "info" : "success"} 
+                    sx={{ 
+                      mb: 3,
+                      borderRadius: '12px',
+                      fontSize: '15px',
+                      fontWeight: 600
+                    }}
+                  >
+                    {isAge0 && '📋 0歳児用フォーム（5項目）| ฟอร์มสำหรับอายุ 0 ปี (5 ฟิลด์)'}
+                    {isAge1to5 && '📋 1-5歳児用フォーム（9項目 + 5領域）| ฟอร์มสำหรับอายุ 1-5 ปี (9 ฟิลด์ + 5 ด้าน)'}
+                  </Alert>
+                </Zoom>
+              )}
 
-                      {/* Content */}
-                      <Card sx={{ mb: 3, backgroundColor: '#f3e5f5ab' }}>
-                        <CardContent>
-                          <Typography fontWeight="bold" sx={{ mb: 2 }} align="left">
-                            {t('annualplanadd.content_title')}
-                          </Typography>
+              {/* Action Button */}
+              {headerData.age && (
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'flex-end',
+                  mb: 3
+                }}>
+                  <Button
+                    variant="contained"
+                    startIcon={<Add />}
+                    onClick={addPeriod}
+                    disabled={currentPeriods.length >= 10}
+                    sx={{ 
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5568d3 0%, #5a3780 100%)',
+                      }
+                    }}
+                  >
+                    期を追加 | เพิ่มช่วงเวลา ({currentPeriods.length}/10)
+                  </Button>
+                </Box>
+              )}
 
-                          <Grid container spacing={2}>
-                            <Grid item xs={12} md={6}>
-                              <Typography variant="subtitle1" fontWeight="700" color="primary" sx={{ mb: 1 }} align="left">
-                                {t('annualplanadd.content_nursing_title')}
-                              </Typography>
-                              <TextField
-                                fullWidth multiline rows={8}
-                                label={t('annualplanadd.content_life_stability_label')}
-                                value={tabsData[tab.id]?.lifeStability || ''}
-                                onChange={handleTabDataChange(tab.id, 'lifeStability')}
-                                placeholder={t('annualplanadd.content_life_stability_ph')}
-                                disabled={!isHeaderSaved}
-                              />
-                            </Grid>
-
-                            <Grid item xs={12} md={6}>
-                              <Typography variant="subtitle1" fontWeight="600" color="primary" sx={{ mb: 1 }} align="left">
-                                {t('annualplanadd.content_education_title')}
-                              </Typography>
-                              <TextField
-                                fullWidth multiline rows={8}
-                                label={t('annualplanadd.content_dev_perspective_label')}
-                                value={tabsData[tab.id]?.developmentPerspective || ''}
-                                onChange={handleTabDataChange(tab.id, 'developmentPerspective')}
-                                placeholder={t('annualplanadd.content_dev_perspective_ph')}
-                                disabled={!isHeaderSaved}
-                              />
-                            </Grid>
-                          </Grid>
-
-                          <Grid container spacing={2} sx={{ mt: 1 }}>
-                            <Grid item xs={12}>
-                              <Typography variant="subtitle1" fontWeight="600" color="primary" sx={{ mb: 1 }} align="left">
-                                {t('annualplanadd.content_nutrition_title')}
-                              </Typography>
-                              <TextField
-                                fullWidth multiline rows={3}
-                                label={t('annualplanadd.content_nutrition_label')}
-                                value={tabsData[tab.id]?.nutritionEducation || ''}
-                                onChange={handleTabDataChange(tab.id, 'nutritionEducation')}
-                                placeholder={t('annualplanadd.content_nutrition_ph')}
-                                disabled={!isHeaderSaved}
-                              />
-                            </Grid>
-                          </Grid>
-                        </CardContent>
-                      </Card>
-
-                      {/* Global Fields */}
-                      <Box sx={{ mt: 4 }}>
-                        <Grid container spacing={3}>
-                          <Grid item xs={12} md={6}>
-                            <TextField
-                              fullWidth multiline rows={5}
-                              label={t('annualplanadd.global_family_title')}
-                              value={globalFields.familyCommunityCooperation}
-                              onChange={handleGlobalFieldsChange('familyCommunityCooperation')}
-                              placeholder={t('annualplanadd.global_family_ph')}
-                              disabled={!isHeaderSaved}
-                              sx={{ "& .MuiInputBase-root": { backgroundColor: !isHeaderSaved ? '#f5f5f5' : 'transparent' } }}
-                            />
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <TextField
-                              fullWidth multiline rows={5}
-                              label={t('annualplanadd.global_eval_title')}
-                              value={globalFields.evaluationReflection}
-                              onChange={handleGlobalFieldsChange('evaluationReflection')}
-                              placeholder={t('annualplanadd.global_eval_ph')}
-                              disabled={!isHeaderSaved}
-                              sx={{ "& .MuiInputBase-root": { backgroundColor: !isHeaderSaved ? '#f5f5f5' : 'transparent' } }}
-                            />
-                          </Grid>
-                        </Grid>
-                      </Box>
-
-                      {/* Tab Actions */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 3, borderTop: '1px solid #e0e0e0', flexWrap: 'wrap', gap: 2 }}>
-                        <Chip
-                          icon={getStatusIcon(tabsData[tab.id]?.status || 'empty')}
-                          label={
-                            tabsData[tab.id]?.status === 'completed'
-                              ? t('annualplanadd.chip_status_completed')
-                              : tabsData[tab.id]?.status === 'draft'
-                              ? t('annualplanadd.chip_status_draft')
-                              : t('annualplanadd.chip_status_empty')
+              {/* Periods - Accordion Style */}
+              {headerData.age && (
+                <Box>
+                  {isAge0 && periodsAge0.map((period, index) => (
+                    <Accordion 
+                      key={period.id}
+                      expanded={expandedPeriods.includes(index)}
+                      onChange={() => togglePeriod(index)}
+                    >
+                      <AccordionSummary
+                        expandIcon={<ExpandMore />}
+                        sx={{
+                          background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)',
+                          '&:hover': {
+                            background: 'linear-gradient(135deg, #bbdefb 0%, #e1bee7 100%)',
                           }
-                          color={getStatusColor(tabsData[tab.id]?.status || 'empty') as any}
-                        />
+                        }}
+                      >
+                        <Box sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 2,
+                          width: '100%',
+                          pr: 2
+                        }}>
+                          <Box sx={{
+                            width: 48,
+                            height: 48,
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            fontSize: '16px'
+                          }}>
+                            {period.name}
+                          </Box>
+                          
+                          <Box sx={{ flex: 1 }}>
+                            <Typography fontWeight="bold" color="text.primary">
+                              {period.range}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              ช่วงเวลา (0歳児)
+                            </Typography>
+                          </Box>
 
-                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                          <Button variant="outlined" startIcon={<Edit />} disabled={!isHeaderSaved} onClick={() => handleSaveTab(tab.id, false)}>
-                            {t('annualplanadd.btn_save_draft')}
-                          </Button>
-                          <Button variant="contained" color="success" startIcon={<CheckCircle />} disabled={!isHeaderSaved} onClick={() => handleSaveTab(tab.id, true)}>
-                            {t('annualplanadd.btn_save_complete')}
-                          </Button>
-                          <Button
-                            variant="contained"
-                            size="large"
-                            startIcon={isSubmitting ? <Schedule className="animate-spin" /> : <CheckCircle />}
-                            disabled={!isHeaderSaved || isSubmitting}
-                            onClick={handleSubmitAll}
-                            sx={{ background: 'linear-gradient(45deg, #2196f3, #9c27b0)', '&:hover': { background: 'linear-gradient(45deg, #1976d2, #7b1fa2)' } }}
-                          >
-                            {isSubmitting ? t('annualplanadd.btn_submitting') : t('annualplanadd.btn_submit_all')}
-                          </Button>
+                          <Chip
+                            icon={getStatusIcon(period.status)}
+                            label={getStatusText(period.status)}
+                            size="small"
+                            color={getStatusColor(period.status)}
+                            sx={{ fontWeight: 600 }}
+                          />
                         </Box>
-                      </Box>
-                    </Box>
-                  )
-                ))}
-              </CardContent>
-            </Card>
+                      </AccordionSummary>
 
-            {/* Add Tab Modal */}
-            <Dialog open={showAddModal} onClose={() => setShowAddModal(false)} maxWidth="sm" fullWidth>
-              <DialogTitle>{t('annualplanadd.modal_add_tab_title')}</DialogTitle>
-              <DialogContent>
-                <TextField
-                  fullWidth
-                  label={t('annualplanadd.modal_tab_name')}
-                  value={newTabName}
-                  onChange={(e) => setNewTabName(e.target.value)}
-                  placeholder={t('annualplanadd.modal_tab_name_ph')}
-                  sx={{ mt: 2 }}
-                  onKeyPress={(e) => e.key === 'Enter' && addNewTab()}
-                  autoFocus
-                />
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setShowAddModal(false)}>{t('annualplanadd.modal_cancel')}</Button>
-                <Button onClick={addNewTab} variant="contained">{t('annualplanadd.modal_add')}</Button>
-              </DialogActions>
-            </Dialog>
+                      <AccordionDetails sx={{ p: 3, background: '#fafafa' }}>
+                        {renderPeriodContentAge0(period)}
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
 
-            <style>{`
-              @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-              .animate-spin { animation: spin 1s linear infinite; }
-            `}</style>
-          </Container>
-        </Box>
+                  {isAge1to5 && periodsAge1to5.map((period, index) => (
+                    <Accordion 
+                      key={period.id}
+                      expanded={expandedPeriods.includes(index)}
+                      onChange={() => togglePeriod(index)}
+                    >
+                      <AccordionSummary
+                        expandIcon={<ExpandMore />}
+                        sx={{
+                          background: 'linear-gradient(135deg, #e8f5e9 0%, #f3e5f5 100%)',
+                          '&:hover': {
+                            background: 'linear-gradient(135deg, #c8e6c9 0%, #e1bee7 100%)',
+                          }
+                        }}
+                      >
+                        <Box sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 2,
+                          width: '100%',
+                          pr: 2
+                        }}>
+                          <Box sx={{
+                            width: 48,
+                            height: 48,
+                            background: 'linear-gradient(135deg, #4CAF50 0%, #81C784 100%)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            fontSize: '16px'
+                          }}>
+                            {period.name}
+                          </Box>
+                          
+                          <Box sx={{ flex: 1 }}>
+                            <Typography fontWeight="bold" color="text.primary">
+                              {period.range}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              ช่วงเวลา (1-5歳児)
+                            </Typography>
+                          </Box>
+
+                          <Chip
+                            icon={getStatusIcon(period.status)}
+                            label={getStatusText(period.status)}
+                            size="small"
+                            color={getStatusColor(period.status)}
+                            sx={{ fontWeight: 600 }}
+                          />
+                        </Box>
+                      </AccordionSummary>
+
+                      <AccordionDetails sx={{ p: 3, background: '#fafafa' }}>
+                        {renderPeriodContentAge1to5(period)}
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Fade>
+        
+        {/* Action Buttons */}
+        <Box 
+          sx={{ 
+            display: "flex", 
+            justifyContent: "space-between", 
+            mt: 4,
+            pt: 3,
+            borderTop: '2px solid #e0e0e0'
+          }}
+        >
+          <Button 
+            variant="outlined"
+            startIcon={<ArrowBack />}
+            size="large"
+          >
+            กลับ | 戻る
+          </Button>
+
+          <Button
+            variant="contained"
+            startIcon={<Save />}
+            onClick={saveData}
+            size="large"
+            sx={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #5568d3 0%, #5a3780 100%)',
+              }
+            }}
+          >
+            💾 บันทึก | 保存
+          </Button>
+        </Box>ThemeProvider
       </ContentMain>
     </ThemeProvider>
   );
 };
 
 export default AnnualplanAdd;
+

@@ -99,6 +99,10 @@ import SubAreaPage from "../pages/master/SubAreaPage";
 import InfoAreaPage from "../pages/master/InfoAreaPage";
 import CareContentPage from "../pages/master/CareContentPage";
 
+// accident
+import IncidentPages from "../pages/accident/IncidentPages";
+import IncidentListPages from "../pages/accident/IncidentListPage";
+import AccidentReceptionFormPage from "../pages/accident/AccidentReceptionPage";
 
 // import SupportFundTabPages from "../pages/accounting/supportfund/SupportFundTabPages";
 
@@ -487,10 +491,21 @@ const Router = createBrowserRouter([
         path: "/master/infoarea",
         element: <InfoAreaPage />
       },
-
-       {
+      {
         path: "/master/carecontent",
         element: <CareContentPage />
+      },
+      {
+        path: "/incident-report",
+        element: <IncidentPages />
+      },
+      {
+        path: "/incident-report-list",
+        element: <IncidentListPages />
+      },
+      {
+        path: "/accident-reception",
+        element: <AccidentReceptionFormPage />
       },
 
 
