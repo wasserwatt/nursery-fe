@@ -63,7 +63,7 @@ export default function DashboardTeacher() {
               </Button>
             </Grid>
             <Grid item xs={6} sm={6} md={2} style={{ paddingLeft: '15px' }}>
-              <Button variant="contained" href="#" style={{ backgroundColor: 'red' }} className='w-full'>
+              <Button variant="contained" onClick={() => navigate("/incident-report-list")} style={{ backgroundColor: 'red' }} className='w-full'>
                 <Typography component="div" style={{ color: 'white', }} >
                   事故報告
                 </Typography>
