@@ -69,6 +69,7 @@ import {
   M_ten_figures,
 } from "../../contexts/master/FiguresContext";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { handleExcel } from "./CSV/OverallPlanCsv";
 
 const theme = createTheme({
   palette: {
@@ -1250,15 +1251,27 @@ const OverallPlanAdd: React.FC = () => {
                 {t("overallplanadd.childcareplan")}
               </Typography>
             </Box>
-            <Button
-              variant="contained"
-              color={isViewMode ? "secondary" : "primary"}
-              startIcon={isViewMode ? <ArrowBack /> : <Save />}
-              onClick={isViewMode ? handleBack : handleSubmit}
-              sx={{ px: 4, py: 1.5 }}
-            >
-              {isViewMode ? "戻る" : t("overallplanadd.save")}
-            </Button>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                variant="contained"
+                color={isViewMode ? "secondary" : "primary"}
+                startIcon={isViewMode ? <ArrowBack /> : <Save />}
+                onClick={isViewMode ? handleBack : handleSubmit}
+                sx={{ px: 4, py: 1.5 }}
+              >
+                {isViewMode ? "戻る" : t("overallplanadd.save")}
+              </Button>
+
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<Save />}
+                onClick={() => handleExcel(formData, rows)}
+                sx={{ px: 4, py: 1.5 }}
+              >
+                Excel
+              </Button>
+            </Box>
           </Box>
 
           <TextField
