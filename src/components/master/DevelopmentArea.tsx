@@ -22,7 +22,7 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { Edit, Delete, Search, FilterList, Add } from "@mui/icons-material";
+import { Edit, Delete, Search, FilterList, Add, Visibility } from "@mui/icons-material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import ContentMain from "../content/Content";
 import { useDevelopment_areas } from "../../contexts/master/development_areasContext";
@@ -54,7 +54,7 @@ const DevelopmentArea: React.FC = () => {
   const [rows, setRows] = useState<DevelopmentRow[]>([]);
   const [searchText, setSearchText] = useState("");
 
-  // Popup สำหรับเพิ่ม/แก้ไข
+  // Popup เพิ่ม/แก้ไข
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
 
@@ -62,6 +62,10 @@ const DevelopmentArea: React.FC = () => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [toDeleteId, setToDeleteId] = useState<number | null>(null);
   const [dialogLoading, setDialogLoading] = useState(false);
+
+  // Popup View
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewData, setViewData] = useState<DevelopmentRow | null>(null);
 
   // Snackbar
   const [snack, setSnack] = useState({
@@ -116,13 +120,18 @@ const DevelopmentArea: React.FC = () => {
     setOpen(true);
   };
 
-  // 🔥 เปิด dialog ลบแบบสวย ๆ
+  // View
+  const handleViewOpen = (row: DevelopmentRow) => {
+    setViewData(row);
+    setViewOpen(true);
+  };
+
+  // ลบ
   const openDeleteDialog = (id: number) => {
     setToDeleteId(id);
     setDeleteOpen(true);
   };
 
-  // 🔥 ลบแบบมีโหลด + snackbar
   const handleDelete = async () => {
     if (toDeleteId == null) return;
 
@@ -175,11 +184,7 @@ const DevelopmentArea: React.FC = () => {
         <Box sx={{ p: 3, minHeight: "100vh" }}>
           {/* Header */}
           <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between" }}>
-            <Typography
-              variant="h4"
-              fontWeight="bold"
-              sx={{ color: "#1976d2" }}
-            >
+            <Typography variant="h4" fontWeight="bold" sx={{ color: "#1976d2" }}>
               Development Area（保育）
             </Typography>
 
@@ -225,9 +230,7 @@ const DevelopmentArea: React.FC = () => {
                   <TableCell sx={{ fontWeight: "bold" }}>コード</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>日本語名</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>英語名</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", width: 150 }}>
-                    操作
-                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: 150 }}>操作</TableCell>
                 </TableRow>
               </TableHead>
 
@@ -239,19 +242,18 @@ const DevelopmentArea: React.FC = () => {
                     <TableCell>{r.name_en}</TableCell>
 
                     <TableCell>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEdit(r)}
-                        color="primary"
-                      >
+                      {/* 👁️ View */}
+                      <IconButton size="small" onClick={() => handleViewOpen(r)} color="info">
+                        <Visibility fontSize="small" />
+                      </IconButton>
+
+                      {/* ✏️ Edit */}
+                      <IconButton size="small" onClick={() => handleEdit(r)} color="primary">
                         <Edit fontSize="small" />
                       </IconButton>
 
-                      <IconButton
-                        size="small"
-                        onClick={() => openDeleteDialog(r.id)}
-                        color="error"
-                      >
+                      {/* 🗑 Delete */}
+                      <IconButton size="small" onClick={() => openDeleteDialog(r.id)} color="error">
                         <Delete fontSize="small" />
                       </IconButton>
                     </TableCell>
@@ -261,13 +263,21 @@ const DevelopmentArea: React.FC = () => {
             </Table>
           </TableContainer>
 
+          {/* Popup View */}
+          <Dialog open={viewOpen} onClose={() => setViewOpen(false)} maxWidth="sm" fullWidth>
+            <DialogTitle>詳細</DialogTitle>
+            <DialogContent dividers>
+              <Typography sx={{ mb: 1 }}>コード: {viewData?.code}</Typography>
+              <Typography sx={{ mb: 1 }}>日本語名: {viewData?.name_ja}</Typography>
+              <Typography sx={{ mb: 1 }}>英語名: {viewData?.name_en}</Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setViewOpen(false)}>閉じる</Button>
+            </DialogActions>
+          </Dialog>
+
           {/* Popup เพิ่ม/แก้ไข */}
-          <Dialog
-            open={open}
-            onClose={() => setOpen(false)}
-            maxWidth="sm"
-            fullWidth
-          >
+          <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
             <DialogTitle>{editId === null ? "新規作成" : "編集"}</DialogTitle>
             <DialogContent dividers>
               <TextField
@@ -303,7 +313,7 @@ const DevelopmentArea: React.FC = () => {
             </DialogActions>
           </Dialog>
 
-          {/* 🔥 Popup ลบแบบสวย ๆ */}
+          {/* Popup ลบ */}
           <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
             <DialogTitle>削除確認</DialogTitle>
             <DialogContent dividers>本当に削除しますか？</DialogContent>
@@ -316,9 +326,7 @@ const DevelopmentArea: React.FC = () => {
                 onClick={handleDelete}
                 disabled={dialogLoading}
                 startIcon={
-                  dialogLoading ? (
-                    <CircularProgress size={16} color="inherit" />
-                  ) : null
+                  dialogLoading ? <CircularProgress size={16} color="inherit" /> : null
                 }
               >
                 削除

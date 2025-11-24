@@ -26,6 +26,13 @@ import {
   Chip,
   ListItemText,
   IconButton,
+  Backdrop,
+  CircularProgress,
+  LinearProgress,
+  DialogActions,
+  Dialog,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
 import {
   Save,
@@ -61,9 +68,9 @@ import {
   useFigures,
   M_ten_figures,
 } from "../../contexts/master/FiguresContext";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { handleExcel } from "./CSV/OverallPlanCsv";
 
-// THEME
 const theme = createTheme({
   palette: {
     primary: { main: "#1976d2", light: "#42a5f5", dark: "#1565c0" },
@@ -79,7 +86,6 @@ const theme = createTheme({
   },
 });
 
-// TYPES
 interface FormData {
   [key: string]: any;
   year: string;
@@ -285,8 +291,6 @@ const INITIAL_FORM_DATA: FormData = {
   support_childcare: "",
 };
 
-// ---------- Reusable components (memoized) ----------
-
 interface GoalSectionProps {
   title: string;
   icon: React.ReactNode;
@@ -468,7 +472,7 @@ const AbilitiesSelect: React.FC<AbilitiesSelectProps> = ({
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
           {selected.map((val) => (
             <Chip
-              key={val}
+              key={`${fieldName}-${val}`}
               label={val}
               onDelete={() => onDelete(val)}
               onMouseDown={(event) => {
@@ -538,7 +542,7 @@ const AbilitiesSelect: React.FC<AbilitiesSelectProps> = ({
         </Box>
       </Box>
       {abilityMaster.map((name) => (
-        <MenuItem key={name} value={name}>
+        <MenuItem key={`${fieldName}-${name}`} value={name}>
           <Checkbox checked={value.indexOf(name) > -1} />
           <ListItemText primary={name} />
         </MenuItem>
@@ -548,14 +552,12 @@ const AbilitiesSelect: React.FC<AbilitiesSelectProps> = ({
 );
 const MemoAbilitiesSelect = React.memo(AbilitiesSelect);
 
-// ---------- Annual row subcomponent (memoized) ----------
 interface AnnualRowProps {
   row: RowData;
   onChange: (id: number, field: keyof RowData, value: string) => void;
   t: any;
 }
 const AnnualRow: React.FC<AnnualRowProps> = ({ row, onChange, t }) => {
-  // onChange บน blur ให้เป็น sync update
   return (
     <TableRow key={row.id} hover>
       <TableCell>
@@ -581,7 +583,6 @@ const AnnualRow: React.FC<AnnualRowProps> = ({ row, onChange, t }) => {
         />
       </TableCell>
 
-      {/* ทำเหมือนกันกับคอลัมน์อื่น ๆ */}
       <TableCell>
         <TextField
           fullWidth
@@ -649,8 +650,8 @@ const MemoAnnualRow = React.memo(
   (prevProps, nextProps) => prevProps.row === nextProps.row
 );
 
-// ---------- MAIN COMPONENT ----------
 const OverallPlanAdd: React.FC = () => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const {
     createOverallPlan,
@@ -664,7 +665,7 @@ const OverallPlanAdd: React.FC = () => {
   const { fetchSubareas } = useSubarea();
   const { fetchM_competencies } = useCompetencies();
   const { fetchM_ten_figures } = useFigures();
-
+  const [loading, setLoading] = useState(false);
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
 
@@ -765,7 +766,6 @@ const OverallPlanAdd: React.FC = () => {
     }));
   };
 
-  // Improved updateRow: functional update to avoid re-rendering all rows
   const updateRow = useCallback(
     (id: number, field: keyof RowData, value: string) => {
       setRows((prev) => {
@@ -778,9 +778,70 @@ const OverallPlanAdd: React.FC = () => {
     },
     []
   );
+  const [openAlert, setOpenAlert] = useState(false);
+  function SaveAlert({
+    open,
+    onClose,
+  }: {
+    open: boolean;
+    onClose: () => void;
+  }) {
+    return (
+      <Dialog
+        open={open}
+        onClose={onClose}
+        fullWidth
+        maxWidth="xs"
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 2,
+            textAlign: "center",
+          },
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            保存されました
+          </Typography>
+        </DialogTitle>
+
+        <DialogContent>
+          <Typography variant="body1" sx={{ opacity: 0.8 }}>
+            บันทึกเรียบร้อยแล้ว
+          </Typography>
+        </DialogContent>
+
+        <DialogActions sx={{ justifyContent: "center" }}>
+          <Button
+            onClick={onClose}
+            variant="contained"
+            sx={{
+              px: 4,
+              borderRadius: "20px",
+              textTransform: "none",
+              fontSize: "16px",
+              background: "linear-gradient(45deg, #2196F3, #64B5F6)",
+              "&:hover": {
+                background: "linear-gradient(45deg, #1976D2, #42A5F5)",
+              },
+            }}
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  }
+
+  // ฟังก์ชันกลับไปหน้าแรก
+  const handleBack = () => {
+    navigate("/report/overallplan"); // เปลี่ยนเป็น path หน้าแรกของคุณ
+  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    setLoading(true);
     try {
       const AGE_KEYS = ["0歳児", "1歳児", "2歳児", "3歳児", "4歳児", "5歳児"];
       const createObjectivesPayload = (
@@ -872,21 +933,23 @@ const OverallPlanAdd: React.FC = () => {
       };
 
       delete (payload as any).methods;
-      console.log("✅ Final Payload:", payload);
+      // console.log("✅ Final Payload:", payload);
 
       if (id) await editOverallPlanMain(Number(id), payload);
       else await createOverallPlan(payload);
 
-      alert("保存されました / บันทึกแล้ว");
+      setOpenAlert(true);
     } catch (error) {
       console.error(error);
       alert("Error creating Overall Plan");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ---------- Load initial master data and (if edit) planData ----------
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true);
       try {
         const [
           philosophies,
@@ -905,7 +968,6 @@ const OverallPlanAdd: React.FC = () => {
             ? fetchOverallPlanById(Number(id))
             : fetchOverallPlanYear(),
         ]);
-
         let newFormData: any = {
           ...INITIAL_FORM_DATA,
           philosophy_detail: philosophies?.[0]?.philosophy_detail || "",
@@ -962,10 +1024,6 @@ const OverallPlanAdd: React.FC = () => {
               planData.philosophy_snapshot || newFormData.philosophy_detail,
             child_vision: planData.child_vision || "",
             educator_vision: planData.educator_vision || "",
-            methods: planData.policies.map((p: any) => ({
-              id: p.policy_master_id,
-              policy_detail: p.policy_text_snap,
-            })),
             abilitiesGoals: planData.figures
               .filter((f: any) => f.type === "育みたい 資質・能力")
               .map((f: any) => f.title_snapshot),
@@ -1008,13 +1066,14 @@ const OverallPlanAdd: React.FC = () => {
         setFormData(newFormData);
       } catch (err) {
         console.error("Failed to load data:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
     loadData();
   }, [id, isEdit]);
 
-  // ---------- Preload missing goals + ageTable when developmentAreas exists ----------
   useEffect(() => {
     const areas = formData.developmentAreas;
     if (!areas || areas.length === 0) return;
@@ -1051,7 +1110,6 @@ const OverallPlanAdd: React.FC = () => {
     });
   }, [formData.developmentAreas]);
 
-  // ---------- Abilities data loader (keeps previous behavior but safe) ----------
   const [abilitiesData, setAbilitiesData] = useState<{
     abilitiesGoals?: { ref_id: number; title_snapshot: string }[];
     abilitiesGoals2?: { ref_id: number; title_snapshot: string }[];
@@ -1128,10 +1186,55 @@ const OverallPlanAdd: React.FC = () => {
   // ---------- RENDER ----------
   return (
     <ThemeProvider theme={theme}>
+      {loading && <LinearProgress />}
+
+      <Backdrop
+        open={loading}
+        sx={{
+          zIndex: (theme) => theme.zIndex.modal + 2,
+          backdropFilter: "blur(3px)",
+          backgroundColor: "rgba(0, 0, 0, 0.3)",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          p: 2,
+        }}
+      >
+        <Box
+          sx={{
+            p: { xs: 3, md: 4 }, // responsive padding
+            borderRadius: 2,
+            display: "flex",
+            alignItems: "center",
+            flexDirection: "column",
+            bgcolor: "rgba(255, 255, 255, 0.1)",
+            textAlign: "center",
+          }}
+        >
+          <CircularProgress size={50} thickness={4} />
+
+          <Typography
+            sx={{
+              mt: 2,
+              fontSize: { xs: "1rem", md: "1.15rem" },
+              opacity: 0.95,
+            }}
+          >
+            読み込み中…
+          </Typography>
+        </Box>
+      </Backdrop>
+
       <ContentMain
         className={`flex flex-col min-h-screen ${
           isViewMode ? "view-mode" : ""
         }`}
+        aria-busy={loading}
       >
         <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
           <Box
@@ -1148,15 +1251,27 @@ const OverallPlanAdd: React.FC = () => {
                 {t("overallplanadd.childcareplan")}
               </Typography>
             </Box>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<Save />}
-              onClick={handleSubmit}
-              sx={{ px: 4, py: 1.5 }}
-            >
-              {t("overallplanadd.save")}
-            </Button>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                variant="contained"
+                color={isViewMode ? "secondary" : "primary"}
+                startIcon={isViewMode ? <ArrowBack /> : <Save />}
+                onClick={isViewMode ? handleBack : handleSubmit}
+                sx={{ px: 4, py: 1.5 }}
+              >
+                {isViewMode ? "戻る" : t("overallplanadd.save")}
+              </Button>
+
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<Save />}
+                onClick={() => handleExcel(formData, rows)}
+                sx={{ px: 4, py: 1.5 }}
+              >
+                Excel
+              </Button>
+            </Box>
           </Box>
 
           <TextField
@@ -1225,7 +1340,7 @@ const OverallPlanAdd: React.FC = () => {
           <AccordionDetails>
             <Grid container spacing={2}>
               {formData.methods.map((method, index) => (
-                <Grid item xs={12} md={6} key={method.id}>
+                <Grid item xs={12} md={6} key={`${method.id}-${index}`}>
                   <TextField
                     fullWidth
                     label={`Method ${index + 1}`}
@@ -1338,7 +1453,7 @@ const OverallPlanAdd: React.FC = () => {
                   const ageTableKey = `ageTable_${y.title_id}`;
 
                   return (
-                    <React.Fragment key={y.title_id}>
+                    <React.Fragment key={`${area.id}-${y.title_id}`}>
                       <MemoGoalSection
                         title={y.title}
                         goals={formData[key] ?? []}
@@ -1826,28 +1941,32 @@ const OverallPlanAdd: React.FC = () => {
             variant="outlined"
             color="warning"
             startIcon={<ArrowBack />}
+            onClick={handleBack}
             sx={{ px: 4, py: 1.5 }}
           >
             {t("overallplanadd.cancel")}
           </Button>
-          <Button
-            variant="contained"
-            color="success"
-            startIcon={<Save />}
-            onClick={handleSubmit}
-            sx={{
-              px: 4,
-              py: 1.5,
-              background: "linear-gradient(45deg, #4caf50, #8bc34a)",
-              "&:hover": {
-                background: "linear-gradient(45deg, #388e3c, #689f38)",
-              },
-            }}
-          >
-            {t("overallplanadd.save")}
-          </Button>
+          {!isViewMode && (
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<Save />}
+              onClick={handleSubmit}
+              sx={{
+                px: 4,
+                py: 1.5,
+                background: "linear-gradient(45deg, #4caf50, #8bc34a)",
+                "&:hover": {
+                  background: "linear-gradient(45deg, #388e3c, #689f38)",
+                },
+              }}
+            >
+              {t("overallplanadd.save")}
+            </Button>
+          )}
         </Box>
       </ContentMain>
+      <SaveAlert open={openAlert} onClose={() => setOpenAlert(false)} />
     </ThemeProvider>
   );
 };
