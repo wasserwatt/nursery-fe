@@ -3,15 +3,16 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Calendar from '../../components/teacher/calendar/Calendar';
-
+import { useNavigate } from "react-router-dom";
 
 export default function DashboardTeacher() {
+  const navigate = useNavigate();
   return (
     <>
       <ContentMain>
         <Grid container spacing={2} className='pt-7'>
           <Grid item xs={6} sm={6} md={4} lg={2}>
-            <Button variant="contained" href="/report/overallplan" sx={{ color: 'white', paddingLeft: '10px', fontSize: { xs: 11, sm: 11, md: 11, lg: 16, }, }} className='w-full'>
+            <Button variant="contained"  onClick={() => navigate("/report/overallplan")} sx={{ color: 'white', paddingLeft: '10px', fontSize: { xs: 11, sm: 11, md: 11, lg: 16, }, }} className='w-full'>
               <Typography component="div" style={{ color: 'white', }} >
                 全体計画
               </Typography>
