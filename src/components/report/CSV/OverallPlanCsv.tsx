@@ -1,252 +1,272 @@
-import ExcelJS from "exceljs"; 
+import { M_development_areas } from "contexts/master/development_areasContext";
+import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 
-export const handleExcel = async (formData: any, rows: any[]) => {
-  const wb = new ExcelJS.Workbook();
-  const ws = wb.addWorksheet("Sheet1");
+const templatePath = "/report/OverallPlan.xlsx";
 
-  const startCol = "A";
-  const endCol = "DV";
+interface AnnualRowType {
+  gardenEvent: string;
+  seasonalEvent: string;
+  foodEducation: string;
+  health: string;
+  neuvola: string;
+  staffTraining: string;
+}
+// ฟังก์ชันแยกข้อและเรียงลำดับ
+function splitAndSort(value: any): string {
+  if (!value) return "";
 
-  function colToNumber(col: string) {
-    let num = 0;
-    for (let i = 0; i < col.length; i++) {
-      num = num * 26 + (col.charCodeAt(i) - 64);
-    }
-    return num;
-  }
+  const str = String(value);
 
-  // ตั้ง width column
-  for (let i = colToNumber(startCol); i <= colToNumber(endCol); i++) {
-    ws.getColumn(i).width = 1.6;
-  }
+  // แยกส่วน “ข้อความยาวก่อนหัวข้อ ①”
+  // สมมติว่าเริ่มหัวข้อ numbered ด้วย ①
+  const splitIndex = str.indexOf("①");
+  const preText = splitIndex >= 0 ? str.slice(0, splitIndex).trim() : "";
+  const numberedText = splitIndex >= 0 ? str.slice(splitIndex).trim() : "";
 
-  // ตั้ง height row 1–3
-  for (let i = 1; i <= 3; i++) {
-    ws.getRow(i).height = 37.5;
-  }
+  // แยกหัวข้อ numbered และ bullet
+  const items = numberedText
+    .split(/(?=①|②|③|④|⑤|⑥|⑦|⑧|⑨|⑩)/)
+    .map((v) => v.trim())
+    .filter((v) => v.length > 0);
 
-  // header “保育理念”
-  const text = "保育理念";
-  const verticalText = text.split("").join("\n");
+  // เรียงหัวข้อ ①②③… (เผื่อไม่เรียง)
+  const orderMap: Record<string, number> = {
+    "①": 1,
+    "②": 2,
+    "③": 3,
+    "④": 4,
+    "⑤": 5,
+    "⑥": 6,
+    "⑦": 7,
+    "⑧": 8,
+    "⑨": 9,
+    "⑩": 10,
+  };
+  items.sort((a, b) => (orderMap[a[0]] || 999) - (orderMap[b[0]] || 999));
 
- 
-
-  let startRow = 1;
-
-  // คำนวณ row ของข้อสุดท้าย
-  const lastIndex = formData.methods.length - 1;
-  const lastPairIndex = Math.floor(lastIndex / 2);
-  const lastRow = startRow + lastPairIndex;
-
-  // merge header “保育理念” จาก A1 → D ของข้อสุดท้าย
-  ws.mergeCells(`A1:D${lastRow}`);
-  ws.getCell("A1").value = verticalText;
-  ws.getCell("A1").alignment = { vertical: "middle", horizontal: "center", wrapText: true };
-  ws.getCell("A1").fill  = { type: "pattern", pattern: "solid",fgColor: { argb: "FFD9D9D9" }, };
-  ws.getCell("A1").border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
-
-  // header “philosophy_detail”
-  ws.mergeCells(`E1:AE${lastRow}`);
-  ws.getCell("E1").value = `${formData.philosophy_detail}`;
-  ws.getCell("E1").alignment = { vertical: "middle", horizontal: "center", wrapText: true };
-  ws.getCell("E1").font = { color: { argb: "FFFF0000" } };
-  ws.getCell("E1").border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
-
-  // header “保育方針”
-  const text2 = "保育方針";
-  const verticalText2 = text2.split("").join("\n");
-  ws.mergeCells(`AF1:AI${lastRow}`);
-  ws.getCell("AF1").value = verticalText2;
-  ws.getCell("AF1").alignment = { vertical: "middle", horizontal: "center", wrapText: true };
-  ws.getCell("AF1").fill  = { type: "pattern", pattern: "solid",fgColor: { argb: "FFD9D9D9" }, };
-  ws.getCell("AF1").border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
-
-  // จำนวน row สำหรับวาดกรอบครบ ถึงข้อสูงสุด
-  const totalRows = lastRow;
-
-  // วาง Methods + ช่องว่างกรอบ
-const maxIndex = Math.max(formData.methods.length, totalRows * 2);
-for (let index = 0; index < maxIndex; index++) {
-  const pairIndex = Math.floor(index / 2);
-  const row = startRow + pairIndex;
-  const isOdd = (index + 1) % 2 === 1; // คี่/คู่
-  const startColMethod = isOdd ? "AJ" : "CB";
-  const endColMethod = isOdd ? "CA" : "DV";
-
-  // merge cell
-  ws.mergeCells(`${startColMethod}${row}:${endColMethod}${row}`);
-
-  const cell = ws.getCell(`${startColMethod}${row}`);
-  if (index < formData.methods.length) {
-    // ใส่ข้อความข้อจริง
-    const method = formData.methods[index];
-    cell.value = `${index + 1}. ${method.policy_detail}`;
-    cell.font = { color: { argb: "FFFF0000" } };
-  } else {
-    // ช่องว่างตีกรอบ
-    cell.value = "";
-  }
-
-  cell.alignment = {vertical: "middle"};
-  cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
-  ws.getRow(row).height = 37.5;
+  // รวมข้อความทั้งหมด
+  const result = [preText, ...items].filter((v) => v).join("\n\n");
+  return result;
 }
 
-// --- นำแถว "目指す子ども像" ออกมาข้างนอก loop ---
-const targetRow = lastRow + 1;
-ws.mergeCells(`A${targetRow}:J${targetRow}`);
-ws.getCell(`A${targetRow}`).value = "目指す子ども像";
-ws.getCell(`A${targetRow}`).alignment = { vertical: "middle", horizontal: "center" ,wrapText: true };
-ws.getCell(`A${targetRow}`).fill  = { type: "pattern", pattern: "solid",fgColor: { argb: "FFD9D9D9" }, };
-ws.getCell(`A${targetRow}`).border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+function setAnnualRows(ws: any, startRow: number, rows: AnnualRowType[]) {
+  rows.forEach((row, i) => {
+    const rowIndex = startRow + i * 3; // เพิ่มทีละ 2
+    const columns = ["BO", "BY", "CI", "CS", "DC", "DM"];
+    const values = [
+      row.gardenEvent,
+      row.seasonalEvent,
+      row.foodEducation,
+      row.health,
+      row.neuvola,
+      row.staffTraining,
+    ];
 
-ws.mergeCells(`K${targetRow}:BK${targetRow}`);
-ws.getCell(`K${targetRow}`).value = `${formData.child_vision}`;
-ws.getCell(`K${targetRow}`).alignment = { vertical: "middle", horizontal: "center",wrapText: true };
-ws.getCell(`K${targetRow}`).border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+    columns.forEach((col, j) => {
+      const cell = ws.getCell(`${col}${rowIndex}`);
+      cell.value = values[j];
+    });
+  });
+}
 
-ws.mergeCells(`BL${targetRow}:BU${targetRow}`);
-ws.getCell(`BL${targetRow}`).value = "望まれる保育者像";
-ws.getCell(`BL${targetRow}`).alignment = { vertical: "middle", horizontal: "center" ,wrapText: true };
-ws.getCell(`BL${targetRow}`).fill  = { type: "pattern", pattern: "solid",fgColor: { argb: "FFD9D9D9" }, };
-ws.getCell(`BL${targetRow}`).border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+export const handleExcel = async (formData: any, _rows: any[]) => {
+  const workbook = new ExcelJS.Workbook();
 
-ws.mergeCells(`BV${targetRow}:DV${targetRow}`);
-ws.getCell(`BV${targetRow}`).value = `${formData.educator_vision}`;
-ws.getCell(`BV${targetRow}`).alignment = { vertical: "middle", horizontal: "center",wrapText: true };
-ws.getCell(`BV${targetRow}`).border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+  const file = await fetch(templatePath);
+  if (!file.ok)
+    throw new Error(
+      `Cannot load template: ${file.status} (${file.statusText})`
+    );
 
-ws.getRow(targetRow).height = 18;
+  const arrayBuffer = await file.arrayBuffer();
+  if (arrayBuffer.byteLength === 0)
+    throw new Error("Template file is empty or invalid");
 
-const targetRow2 = targetRow + 1;
-let a = 42;
-let b = 11;
-const totalOddMethods = Math.ceil(formData.methods.length / 2); 
-a += totalOddMethods;
-b += totalOddMethods;
+  await workbook.xlsx.load(arrayBuffer);
 
-ws.mergeCells(`A${targetRow2}:B${a}`);
-
-const text3 = "保育";
-const verticalText3 = text3.split("").join("\n");
-
-const cell3 = ws.getCell(`A${targetRow2}`);
-cell3.value = verticalText3;
-cell3.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
-cell3.fill = {
-  type: "pattern",
-  pattern: "solid",
-  fgColor: { argb: "FFD9D9D9" }, // สี #D9D9D9
-};
-cell3.border = {
-  top: { style: "thin" },
-  left: { style: "thin" },
-  bottom: { style: "thin" },
-  right: { style: "thin" },
-};
-ws.mergeCells(`C${targetRow2}:DM${targetRow2}`);
-const cell4 = ws.getCell(`C${targetRow2}`);
-cell4.value = "ね ら い 及 び 内 容";
-cell4.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
-cell4.fill = {
-  type: "pattern",
-  pattern: "solid",
-  fgColor: { argb: "FFD9D9D9" }, // สี #D9D9D9
-};
-cell4.border = {
-  top: { style: "thin" },
-  left: { style: "thin" },
-  bottom: { style: "thin" },
-  right: { style: "thin" },
-};
-ws.getRow(targetRow2).height = 23.5;
-
-
-const targetRow3 = targetRow2 + 1;
-ws.mergeCells(`DN${targetRow2}:DV${targetRow3}`);
-const cell5 = ws.getCell(`DN${targetRow2}`);
-cell5.value = "育みたい\n資質・能力";
-cell5.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
-cell5.fill = {
-  type: "pattern",
-  pattern: "solid",
-  fgColor: { argb: "FFD9D9D9" }, // สี #D9D9D9
-};
-cell5.border = {
-  top: { style: "thin" },
-  left: { style: "thin" },
-  bottom: { style: "thin" },
-  right: { style: "thin" },
-};
-
-const text4 = "保育";
-const verticalText4 = text4.split("").join("\n");
-ws.mergeCells(`C${targetRow3}:D${b}`);
-const cell6 = ws.getCell(`C${targetRow3}`);
-cell6.value = verticalText4;
-cell6.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
-cell6.fill = {
-  type: "pattern",
-  pattern: "solid",
-  fgColor: { argb: "FFD9D9D9" }, // สี #D9D9D9
-};
-cell6.border = {
-  top: { style: "thin" },
-  left: { style: "thin" },
-  bottom: { style: "thin" },
-  right: { style: "thin" },
-};
-
-ws.mergeCells(`E${targetRow3}:AG${targetRow3}`);
-const cell7 = ws.getCell(`E${targetRow3}`);
-cell7.value = "保育所保育指針に定めるねらい";
-cell7.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
-cell7.fill = {
-  type: "pattern",
-  pattern: "solid",
-  fgColor: { argb: "FFD9D9D9" }, // สี #D9D9D9
-};
-cell7.border = {
-  top: { style: "thin" },
-  left: { style: "thin" },
-  bottom: { style: "thin" },
-  right: { style: "thin" },
-};
-
-const categories = [
-  { label: "0歳児", startCol: "AH", endCol: "AU" },
-  { label: "1歳児", startCol: "AV", endCol: "BI" },
-  { label: "2歳児", startCol: "BJ", endCol: "BW" },
-  { label: "3歳児", startCol: "BX", endCol: "CK" },
-  { label: "4歳児", startCol: "CL", endCol: "CY" },
-  { label: "5歳児", startCol: "CZ", endCol: "DM" },
-];
-
-categories.forEach(cat => {
-  ws.mergeCells(`${cat.startCol}${targetRow3}:${cat.endCol}${targetRow3}`);
-  const cell = ws.getCell(`${cat.startCol}${targetRow3}`);
-  cell.value = cat.label;
-  cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
-  cell.fill = {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "FFD9D9D9" }, // สี #D9D9D9
+  const ws = workbook.getWorksheet("2022");
+  if (!ws) throw new Error("Worksheet not found");
+  ws.getCell("E1").value = formData.philosophy_detail;
+  // map method index → cell
+  const methodCellMap: Record<number, string> = {
+    0: "AJ1", // ข้อ 1
+    1: "AJ2", // ข้อ 2
+    2: "AJ3", // ข้อ 3
+    3: "CB1", // ข้อ 4
+    4: "CB2", // ข้อ 5
+    5: "CB3", // ข้อ 6
   };
-  cell.border = {
-    top: { style: "thin" },
-    left: { style: "thin" },
-    bottom: { style: "thin" },
-    right: { style: "thin" },
+
+  formData.methods.forEach((method: any, index: number) => {
+    const cell = methodCellMap[index];
+    if (cell) {
+      ws.getCell(cell).value = `${index + 1}. ${method.policy_detail}`;
+    }
+  });
+
+  ws.getCell("K4").value = formData.child_vision;
+  ws.getCell("BV4").value = formData.educator_vision;
+
+  formData.developmentAreas
+    .filter((area: { code: string }) => area.code === "CARE")
+    .forEach((area: M_development_areas) => {
+      const seenTitles = new Set<string>();
+      let rowIndex = 7;
+
+      area.yougo.forEach((y) => {
+        if (seenTitles.has(y.title)) return;
+        seenTitles.add(y.title);
+
+        const key = `${y.title_id}`;
+        const selectedYougos = (formData[key] ?? [])
+          .filter((obj: { checked: boolean }) => obj.checked)
+          .map((obj: { text: string }) => obj.text);
+
+        const yougoText = selectedYougos.join("\n");
+
+        ws.getCell(`I${rowIndex}`).value = yougoText;
+        const ageTableKey = `ageTable_${y.title_id}`;
+        const ageData = formData[ageTableKey] ?? {};
+        const categories = [
+          { startCol: "AH", endCol: "AU" },
+          { startCol: "AV", endCol: "BI" },
+          { startCol: "BJ", endCol: "BW" },
+          { startCol: "BX", endCol: "CK" },
+          { startCol: "CL", endCol: "CY" },
+          { startCol: "CZ", endCol: "DM" },
+        ];
+        const ageKeys = Object.keys(ageData);
+        categories.forEach((cat, i) => {
+          const ageKey = ageKeys[i];
+          const text = ageKey ? ageData[ageKey] : "";
+          const cell = ws.getCell(`${cat.startCol}${rowIndex}`);
+          cell.value = text;
+        });
+        const abilityConfigMap: Record<
+          number,
+          {
+            title: string;
+            fieldName: "abilitiesGoals" | "abilitiesGoals2";
+            openKey: "abilitiesGoals" | "abilitiesGoals2";
+            cell: string; // <--- เพิ่มตำแหน่งเซลล์ที่ต้องการ
+          }
+        > = {
+          1: {
+            title: "育みたい 資質・能力",
+            fieldName: "abilitiesGoals",
+            openKey: "abilitiesGoals",
+            cell: "DN7",
+          },
+        };
+
+        const config = abilityConfigMap[area.id];
+        if (!config) return;
+        const abilityValues = formData[config.fieldName] || [];
+        const uniqueValues = Array.from(
+          new Set(abilityValues.map((v: any) => v.title_snapshot || v))
+        );
+
+        // 2) เซ็ตค่าไปเซลล์ที่กำหนดใน config.cell
+        const cell = ws.getCell(config.cell);
+        cell.value = uniqueValues.join("\n");
+        cell.alignment = {
+          vertical: "middle",
+          horizontal: "center",
+          wrapText: true,
+        };
+        rowIndex += 4;
+      });
+    });
+
+  formData.developmentAreas
+    .filter((area: { code: string }) => area.code === "EDU")
+    .forEach((area: M_development_areas) => {
+      const seenTitles = new Set<string>();
+      let rowIndex = 16;
+
+      // ---------- 1) เขียนส่วน yougo ----------
+      area.yougo.forEach((y) => {
+        if (seenTitles.has(y.title)) return;
+        seenTitles.add(y.title);
+
+        const key = `${y.title_id}`;
+        const selectedYougos = (formData[key] ?? [])
+          .filter((obj: { checked: boolean }) => obj.checked)
+          .map((obj: { text: string }) => obj.text);
+
+        const yougoText = selectedYougos.join("\n");
+        ws.getCell(`I${rowIndex}`).value = yougoText;
+
+        const ageTableKey = `ageTable_${y.title_id}`;
+        const ageData = formData[ageTableKey] ?? {};
+
+        const categories = [
+          { startCol: "AH", endCol: "AU" },
+          { startCol: "AV", endCol: "BI" },
+          { startCol: "BJ", endCol: "BW" },
+          { startCol: "BX", endCol: "CK" },
+          { startCol: "CL", endCol: "CY" },
+          { startCol: "CZ", endCol: "DM" },
+        ];
+
+        const ageKeys = Object.keys(ageData);
+        categories.forEach((cat, i) => {
+          const ageKey = ageKeys[i];
+          const text = ageKey ? ageData[ageKey] : "";
+          const cell = ws.getCell(`${cat.startCol}${rowIndex}`);
+          cell.value = text;
+        });
+        rowIndex += 5; // <--- เลื่อนแถวของ yougo ตามปกติ
+      });
+
+      // ---------- 2) เขียนส่วน abilities (10の姿) ----------
+      if (area.id === 2) {
+        const abilityValues = formData["abilitiesGoals2"] || [];
+        const uniqueValues = Array.from(
+          new Set(abilityValues.map((v: any) => v.title_snapshot || v))
+        );
+
+        const cell = ws.getCell("DN16");
+        cell.value = uniqueValues.join("\n");
+        cell.alignment = {
+          vertical: "middle",
+          horizontal: "center",
+          wrapText: true,
+        };
+      }
+    });
+
+  const mapping = {
+    C43: formData.physical_mental_health,
+    S43: formData.relationships_people,
+    AI43: formData.relationships_environment,
+    AY43: formData.respect_human_rights,
+    BO43: formData.respect_expression,
+    CE43: formData.guardian_support_collaboration,
+    CU43: formData.community_collaboration,
+    DK43: formData.school_connection,
   };
-});
 
-ws.getRow(targetRow3).height = 23.5;
+  Object.entries(mapping).forEach(([cell, value]) => {
+    ws.getCell(cell).value = value ?? "";
+  });
 
-const targetRow4 = targetRow3 + 1;
+  const excelMap = [
+    ["C47", splitAndSort(formData.health_support)],
+    ["C59", splitAndSort(formData.environment_sanitation_safety)],
+    ["C68", formData.food_education],
+    ["C75", splitAndSort(formData.neuvola_support)],
+    ["C84", splitAndSort(formData.guardian_support)],
+    ["BN47", splitAndSort(formData.support_childcare)],
+  ];
 
+  excelMap.forEach(([cell, value]) => {
+    ws.getCell(cell).value = value;
+  });
 
-  // สร้างไฟล์ Excel
-  const buf = await wb.xlsx.writeBuffer();
+  setAnnualRows(ws, 55, _rows);
+
+  const buf = await workbook.xlsx.writeBuffer();
   saveAs(new Blob([buf]), "OverallPlan.xlsx");
 };
