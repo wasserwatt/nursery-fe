@@ -801,7 +801,7 @@ const OverallPlanAdd: React.FC = () => {
         }}
       >
         <DialogTitle>
-          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+          <Typography component="div" variant="h6" sx={{ fontWeight: "bold" }}>
             保存されました
           </Typography>
         </DialogTitle>
@@ -1262,15 +1262,17 @@ const OverallPlanAdd: React.FC = () => {
                 {isViewMode ? "戻る" : t("overallplanadd.save")}
               </Button>
 
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<Save />}
-                onClick={() => handleExcel(formData, rows)}
-                sx={{ px: 4, py: 1.5 }}
-              >
-                Excel
-              </Button>
+              {isViewMode && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<Save />}
+                  onClick={() => handleExcel(formData, rows)}
+                  sx={{ px: 4, py: 1.5 }}
+                >
+                  Excel
+                </Button>
+              )}
             </Box>
           </Box>
 
