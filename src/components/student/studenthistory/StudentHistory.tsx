@@ -1,4 +1,4 @@
-import { Button, Card, Checkbox, FormControl, Box, FormControlLabel, Grid, MenuItem, Select, TextField, Typography, InputAdornment } from "@mui/material";
+import { Button, Card, Checkbox, FormControl, Box, FormControlLabel, Grid, MenuItem, Select, TextField, Typography, FormGroup } from "@mui/material";
 import ContentMain from "../../content/Content";
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -11,14 +11,21 @@ import Loading from '../../Loading';
 import { useEffect, useState } from 'react';
 import Numpad from "../../content/Numpad";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import SaveIcon from '@mui/icons-material/Save';
 
+interface FamilyMember {
+  id: number;
+}
 
 export default function StudentHistory() {
 
   const [loading, setLoading] = useState(true);
   const [numpadOpen, setNumpadOpen] = useState(false);
   const [currentInputId, setCurrentInputId] = useState('');
+  const [familyMemberCounter, setFamilyMemberCounter] = useState(1);
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([{ id: 1 }]);
+  const [birthCondition, setBirthCondition] = useState('normal'); // 'normal' or 'abnormal'
+  const [birthDetails, setBirthDetails] = useState<string[]>([]);
+  const [birthOther, setBirthOther] = useState('');
 
   const handleInputClick = (id: string) => {
     setCurrentInputId(id);
@@ -33,3306 +40,1445 @@ export default function StudentHistory() {
     setNumpadOpen(false);
   };
 
+  const addFamilyMember = () => {
+    const newId = familyMemberCounter + 1;
+    setFamilyMemberCounter(newId);
+    setFamilyMembers([...familyMembers, { id: newId }]);
+  };
+
+  const removeFamilyMember = (id: number) => {
+    if (familyMembers.length <= 1) {
+      alert('最低1人の家族メンバーが必要です');
+      return;
+    }
+    if (window.confirm('この家族メンバーを削除してもよろしいですか？')) {
+      setFamilyMembers(familyMembers.filter(member => member.id !== id));
+    }
+  };
+
   useEffect(() => {
     setTimeout(() => {
-      setLoading(false); // Set loading to false after simulated data fetch
-    }, 1000); // Simulate 2 seconds loading time
+      setLoading(false);
+    }, 1000);
   }, []);
+
+  const TOTAL_UNITS = 42; 
+  const calculatePosition = (month: number): number => {
+    if (month <= 24) {
+      return (month / TOTAL_UNITS) * 100;
+    } else {
+      return (
+        (24 / TOTAL_UNITS) * 100 +
+        ((month - 24) * 0.3 / TOTAL_UNITS) * 100
+      );
+    }
+  };
 
   if (loading) {
     return <Loading />;
   }
 
   return (
-
     <>
-      <ContentMain className="flex flex-col min-h-screen ">
-
-        {/* Start Radiogroup Box */}
-        <RadioGroup
-          defaultValue=""
-          aria-labelledby="demo-customized-radios"
-          name="customized-radios"
-        >
-          <Grid container spacing={2} className='pt-7 pl-3' >
-            <Grid item xs={4} sm={4} md={2} sx={{ marginLeft: { xs: 0, sm: 0, md: 0, lg: 5 } }}>
-              <FormControlLabel value="0歲児" control={<Radio />} label="0歲児 " />
-            </Grid>
-            <Grid item xs={4} sm={4} md={2} sx={{ marginLeft: { xs: 0, sm: 0, md: 0, lg: -8 } }}>
-              <FormControlLabel value="1歲児 " control={<Radio />} label="1歲児 " />
-            </Grid>
-            <Grid item xs={4} sm={4} md={2} sx={{ marginLeft: { xs: 0, sm: 0, md: 0, lg: -8 } }}>
-              <FormControlLabel value="2歲児" control={<Radio />} label="2歲児 " />
-            </Grid>
-            <Grid item xs={4} sm={4} md={2} sx={{ marginLeft: { xs: 0, sm: 0, md: 0, lg: -8 } }}>
-              <FormControlLabel value="3歲児" control={<Radio />} label="3歲児 " />
-            </Grid>
-            <Grid item xs={4} sm={4} md={2} sx={{ marginLeft: { xs: 0, sm: 0, md: 0, lg: -8 } }}>
-              <FormControlLabel value="4歲児" control={<Radio />} label="4歲児 " />
-            </Grid>
-            <Grid item xs={4} sm={4} md={2} sx={{ marginLeft: { xs: 0, sm: 0, md: 0, lg: -8 } }}>
-              <FormControlLabel value="5歲児" control={<Radio />} label="5歲児 " />
-            </Grid>
-          </Grid>
-        </RadioGroup>
-        {/* End Radiogroup Box */}
-
-        {/* Start furigana Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 lg:pl-24 pt-6">
-            ふりがな
-          </Typography>
-          <Grid item xs={7.5} sm={7} md={3}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-        </Grid>
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' className="pl-[51px] lg:pl-32 pt-6">
-            氏名
-          </Typography>
-          <Grid item xs={7.5} sm={7} md={3}>
-            <TextField
-              className='w-full'
-              id="fullname-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-        </Grid>
-        {/* End fullname Grid */}
-
-        {/* Start gender Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' className="pl-[51px] lg:pl-32 pt-6">
-            性別
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.5}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
-        {/* End gender Grid */}
-
-        {/* Start birthday Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' className="pl-5 lg:pl-24 pt-6">
-            生年月日
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.5}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Typography component='div' className="pl-5 pt-6 md:pl-7 md:pr-0 lg:pl-0"></Typography>
-          <Grid item xs={3.3} sm={4} md={1.2}>
-            <TextField
-              className='w-full'
-              id="input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-
-          <Typography component='div' className="pl-2 pt-6 lg:pl-1 lg:pr-4 ">
-            年
-          </Typography>
-          <Typography component='div' className="pl-[85px] pt-6 md:pl-[85px] lg:pl-0 "></Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            月
-          </Typography>
-
-          <Grid item xs={3.3} sm={4} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            日
-          </Typography>
-
-        </Grid>
-        {/* End birthday Grid */}
-
-        {/* Start admission Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' className="pl-[53px] lg:pl-32 pt-6">
-            入所
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.5}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Typography component='div' className="pl-5 pt-6 md:pl-7 md:pr-0 lg:pl-0 "></Typography>
-          <Grid item xs={3.3} sm={4} md={1.2}>
-            <TextField
-              className='w-full'
-              id="input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 md:pr-4 pt-6">
-            年
-          </Typography>
-          <Typography component='div' className="pl-[85px] pt-6 md:pl-[85px] lg:pl-0 "></Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            月
-          </Typography>
-
-          <Grid item xs={3.3} sm={4} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            日
-          </Typography>
-
-        </Grid>
-        {/* End admission Grid */}
-
-        {/* Start dismissal Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' className="pl-[53px] pt-6 lg:pl-32">
-            退所
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.5}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Typography component='div' className="pl-5 pt-6 md:pl-7 lg:pl-0 lg:pr-0"></Typography>
-          <Grid item xs={3.3} sm={4} md={1.2}>
-            <TextField
-              className='w-full'
-              id="input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 md:pr-4 pt-6">
-            年
-          </Typography>
-          <Typography component='div' className="pl-[85px] pt-6 md:pl-[85px] lg:pl-0 "></Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            月
-          </Typography>
-
-          <Grid item xs={3.3} sm={4} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            日
-          </Typography>
-
-        </Grid>
-        {/* End dismissal Grid */}
-
-        {/* Start Address Card */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-10 pl-20' >
-          <Card sx={{ bgcolor: "pink", width: 90, height: 40 }}>
-            <Typography component='div' className="pt-2">
-              現住所
-            </Typography>
-          </Card>
-        </Grid>
-        {/* End Address Card */}
-
-        {/* Start Address Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-10 md:pl-16 lg:pl-24' >
-          <Grid item xs={10} sm={5} md={2}>
-            <TextField
-              className='w-full'
-              id="Postcode-input"
-              label="〒"
-              type="text"
-              size='small'
-              style={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Grid item xs={10} sm={5} md={3}>
-            <TextField
-              className='w-full'
-              id="Address-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Grid item xs={10} sm={5} md={2.5}>
-            <TextField
-              className='w-full'
-              id="tel"
-              name="tel"
-              type="tel"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-              onClick={() => handleInputClick('tel')}
-              InputLabelProps={{ shrink: true }} 
-              InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      Tel:
-                    </InputAdornment>
-                  ),
-                  readOnly: true 
-                }}
-            />
-            <Numpad open={numpadOpen && currentInputId === 'tel'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-          </Grid>
-          <Grid item xs={10} sm={5} md={3}>
-            <TextField
-              className='w-full'
-              id="School-district-input"
-              label="校区"
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Grid item>
-            <Button variant="contained" sx={{ width: 30, marginLeft: { xs: 13, sm: 15, md: 0 } }}>+</Button>
-          </Grid>
-        </Grid>
-        {/* End Address Grid */}
-
-        {/* Start Address Card */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-10 pl-20' >
-          <Card sx={{ bgcolor: "pink", width: 90, height: 40 }}>
-            <Typography component='div' className="pt-2">
-              家族の状況
-            </Typography>
-          </Card>
-        </Grid>
-        {/* End Address Card */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 pr-[32px] md:pr-[32px] lg:pr-0 lg:pl-24 pt-6">
-            氏名
-          </Typography>
-          <Grid item xs={7.5} sm={8.1} md={3}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Typography component='div' className="pl-[20px] pt-6 md:pl-5 lg:pl-[70px]">
-            生年月日
-          </Typography>
-          <Grid item xs={3.5} sm={3.5} md={1.3}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Typography component='div' className="pl-5 pt-6 md:pl-7 lg:pl-0 lg:pr-0"></Typography>
-          <Grid item xs={3.3} sm={3.8} md={1.2}>
-            <TextField
-              className='w-full'
-              id="input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 md:pr-1 pt-6">
-            年
-          </Typography>
-          <Typography component='div' className="pl-[85px] pt-6 md:pl-[85px] lg:pl-0 "></Typography>
-
-          <Grid item xs={3.5} sm={3.5} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            月
-          </Typography>
-
-          <Grid item xs={3.3} sm={3.8} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            日
-          </Typography>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 md:pr-[75px] pr-[32px] lg:pr-0 lg:pl-24 pt-6">
-            続柄
-          </Typography>
-          <Grid item xs={7.5} sm={7} md={3}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Typography component='div' fontWeight={500} className="pl-5 md:pr-0 lg:pl-[25px] pt-6">
-            職業(具体的に)
-          </Typography>
-          <Grid item xs={6.1} sm={7} md={4}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 pr-4 md:pr-[58px] lg:pr-0 lg:pl-20 pt-6">
-            勤務先
-          </Typography>
-          <Grid item xs={7.5} sm={7} md={3}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Typography component='div' fontWeight={500} className="pl-5 pr-[45px] md:pr-[85px] lg:pr-0 lg:pl-[110px] pt-6">
-            Tel
-          </Typography>
-          <Grid item xs={7.5} sm={7} md={4}>
-            <TextField
-              className='w-full'
-              id="tel1"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-              onClick={() => handleInputClick('tel1')}
-              InputLabelProps={{ shrink: true }} 
-              InputProps={{
-                  readOnly: true 
-                }}
-            />
-            <Numpad open={numpadOpen && currentInputId === 'tel1'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-          </Grid>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start 通所(園)方法 Card */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-10 pl-20' >
-          <Card sx={{ bgcolor: "pink", width: 130, height: 40 }}>
-            <Typography component='div' className="pt-2">
-              通所(園)方法
-            </Typography>
-          </Card>
-        </Grid>
-        {/* End Card */}
-
-        {/* Start Address Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-10 md:pl-16 lg:pl-24' >
-          <Grid item xs={8} sm={7} md={3}>
-            <Typography component='div' className=" pb-5">
-              自宅
-            </Typography>
-            <TextField
-              className='w-full'
-              id="School-district-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-            <Typography component='div' className="pt-3">
-              保育所(園)
-            </Typography>
-          </Grid>
-          <Grid item >
-            <Button variant="contained" sx={{ width: 30, marginTop: 6.5 }}>+</Button>
-          </Grid>
-        </Grid>
-        {/* End Address Grid */}
-
-        {/* Start かかりつけの病院 Card */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-10 pl-20' >
-          <Card sx={{ bgcolor: "pink", width: 160, height: 40 }}>
-            <Typography component='div' className="pt-2">
-              かかりつけの病院
-            </Typography>
-          </Card>
-        </Grid>
-        {/* End Card */}
-
-        {/* Start 小児科 Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 md:pr-3 lg:pl-24 pt-6">
-            小児科
-          </Typography>
-          <Grid item xs={8} sm={8} md={3}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Typography component='div' fontWeight={500} className="pl-5 pr-[28px] md:pr-[40px] lg:pr-0 lg:pl-[25px] pt-6">
-            Tel
-          </Typography>
-          <Grid item xs={8} sm={8} md={3}>
-            <TextField
-              className='w-full'
-              id="tel2"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-              onClick={() => handleInputClick('tel2')}
-              InputLabelProps={{ shrink: true }} 
-              InputProps={{
-                  readOnly: true 
-                }}
-            />
-            <Numpad open={numpadOpen && currentInputId === 'tel2'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-          </Grid>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start 内科 Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 pr-4 md:pr-7 lg:pl-24 pt-6">
-            内科
-          </Typography>
-          <Grid item xs={8} sm={8} md={3}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Typography component='div' fontWeight={500} className="pl-5 pr-[28px] md:pr-[40px] lg:pr-0 lg:pl-[25px] pt-6">
-            Tel
-          </Typography>
-          <Grid item xs={8} sm={8} md={3}>
-            <TextField
-              className='w-full'
-              id="tel3"
-              name="tel3"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-              onClick={() => handleInputClick('tel3')}
-              InputLabelProps={{ shrink: true }} 
-              InputProps={{
-                  readOnly: true 
-                }}
-            />
-            <Numpad open={numpadOpen && currentInputId === 'tel3'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-          </Grid>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start 外科 Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 pr-4 md:pr-7 lg:pl-24 pt-6">
-            外科
-          </Typography>
-          <Grid item xs={8} sm={8} md={3}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Typography component='div' fontWeight={500} className="pl-5 pr-[28px] md:pr-[40px] lg:pr-0 lg:pl-[25px] pt-6">
-            Tel
-          </Typography>
-          <Grid item xs={8} sm={8} md={3}>
-            <TextField
-              className='w-full'
-              id="tel4"
-              name=""
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-              onClick={() => handleInputClick('tel4')}
-              InputLabelProps={{ shrink: true }} 
-              InputProps={{
-                  readOnly: true 
-                }}
-            />
-            <Numpad open={numpadOpen && currentInputId === 'tel4'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-          </Grid>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start 歯科 Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 pr-4 md:pr-7 lg:pl-24 pt-6">
-            歯科
-          </Typography>
-          <Grid item xs={8} sm={8} md={3}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Typography component='div' fontWeight={500} className="pl-5 pr-[28px] md:pr-[40px] lg:pr-0 lg:pl-[25px] pt-6">
-            Tel
-          </Typography>
-          <Grid item xs={8} sm={8} md={3}>
-            <TextField
-              className='w-full'
-              id="tel5"
-              name="tel5"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-              onClick={() => handleInputClick('tel5')}
-              InputLabelProps={{ shrink: true }} 
-              InputProps={{
-                  readOnly: true 
-                }}
-            />
-            <Numpad open={numpadOpen && currentInputId === 'tel5'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-          </Grid>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start 科 Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 pr-8 md:pr-11 lg:pr-7 lg:pl-28 pt-6">
-            科
-          </Typography>
-          <Grid item xs={8} sm={8} md={3}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Typography component='div' fontWeight={500} className="pl-5 pr-[28px] md:pr-[40px] lg:pr-0 lg:pl-[25px] pt-6">
-            Tel
-          </Typography>
-          <Grid item xs={8} sm={8} md={3}>
-            <TextField
-              className='w-full'
-              id="tel7"
-              name="tel7"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-              onClick={() => handleInputClick('tel7')}
-              InputLabelProps={{ shrink: true }} 
-              InputProps={{
-                  readOnly: true 
-                }}
-            />
-            <Numpad open={numpadOpen && currentInputId === 'tel7'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-          </Grid>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start 科 Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 pr-8 md:pr-11 lg:pr-7 lg:pl-28 pt-6">
-            科
-          </Typography>
-          <Grid item xs={8} sm={8} md={3}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Typography component='div' fontWeight={500} className="pl-5 pr-[28px] md:pr-[40px] lg:pr-0 lg:pl-[25px] pt-6">
-            Tel
-          </Typography>
-          <Grid item xs={8} sm={8} md={3}>
-            <TextField
-              className='w-full'
-              id="tel8"
-              name="tel8"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-              onClick={() => handleInputClick('tel7')}
-              InputLabelProps={{ shrink: true }} 
-              InputProps={{
-                  readOnly: true 
-                }}
-            />
-            <Numpad open={numpadOpen && currentInputId === 'tel8'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-          </Grid>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start 血液型 Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 md:pr-3 lg:pr-7 lg:pl-20 pt-6">
-            血液型
-          </Typography>
-          <Grid item xs={6} sm={5} md={2}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start 妊娠中の状況 Grid */}
-        <RadioGroup
-          defaultValue=""
-          aria-labelledby="demo-customized-radios"
-          name="customized-radios"
-        >
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-            <Typography component='div' fontWeight={500} className="pl-5 md:pr-3 lg:pr-7 lg:pl-20 pt-6">
-              妊娠中の状況
-            </Typography>
-            <Grid item xs={4.5} sm={3.5} md={1.7}>
-              <FormControlLabel value="胃常なし" control={<Radio />} label="胃常なし" />
-            </Grid>
-            <Grid item xs={3.5} sm={3.5} md={1.3}>
-              <FormControlLabel value="あり" control={<Radio />} label="あり" />
-            </Grid>
-            <Grid item xs={10.5} sm={10} md={2}>
+      <ContentMain className="flex flex-col min-h-screen">
+        
+        {/* Header with 秘 circle and title */}
+        <Grid container spacing={2} className='pt-7 pl-3'>
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '3px solid #000', pb: 2, mb: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  width: 60, 
+                  height: 60, 
+                  border: '3px solid #000', 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: '1.8rem',
+                  fontWeight: 'bold'
+                }}>
+                  秘
+                </Box>
+                <Box>
+                  <Typography variant="h4" component='div' fontWeight={700}>
+                    児童票
+                  </Typography>
+                  <Typography variant="caption" component='div'>
+                    (様式1-1)
+                  </Typography>
+                </Box>
+              </Box>
               <TextField
-                className='w-full'
-                id="furigana-input"
-                label=""
-                type="text"
+                label="施設長"
                 size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
+                sx={{ backgroundColor: "white", width: 200 }}
               />
-            </Grid>
-            <Typography component='div' fontWeight={500} className="pl-5 md:pr-3 lg:pr-4 lg:pl-10 pt-6">
-              妊娠期間
-            </Typography>
-            <Grid item xs={7.7} sm={7.4} md={1.5}>
-              <TextField
-                className='w-full'
-                id="furigana-input"
-                label=""
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Typography component='div' fontWeight={500} className="pl-5 md:pr-3 lg:pr-0 lg:pl-1 pt-6">
-              週
-            </Typography>
+            </Box>
           </Grid>
-        </RadioGroup>
-        {/* End Grid */}
-
-        {/* Start 分娩時の状況 Grid */}
-        <RadioGroup
-          defaultValue=""
-          aria-labelledby="demo-customized-radios"
-          name="customized-radios"
-        >
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-            <Typography component='div' fontWeight={500} className="pl-5 md:pr-3 lg:pr-7 lg:pl-20 pt-6">
-              分娩時の状況
-            </Typography>
-            <Grid item xs={4.5} sm={3.5} md={1.7}>
-              <FormControlLabel value="胃常なし" control={<Radio />} label="胃常なし" />
-            </Grid>
-            <Grid item xs={3.5} sm={3.5} md={1.3}>
-              <FormControlLabel value="あり" control={<Radio />} label="あり" />
-            </Grid>
-            <Grid item xs={10.5} sm={10} md={2}>
-              <TextField
-                className='w-full'
-                id="furigana-input"
-                label=""
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Typography component='div' fontWeight={500} className="pl-5 md:pr-3 lg:pr-0 lg:pl-10 pt-6">
-              出生時体重
-            </Typography>
-            <Grid item xs={7.2} sm={7} md={1.5}>
-              <TextField
-                className='w-full'
-                id="furigana-input"
-                label=""
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Typography component='div' fontWeight={500} className="pl-5 md:pr-3 lg:pr-0 lg:pl-1 pt-6">
-              g
-            </Typography>
-          </Grid>
-        </RadioGroup>
-        {/* End Grid */}
-
-
-        {/* Start 出生時の状況 Grid */}
-        <RadioGroup
-          defaultValue=""
-          aria-labelledby="demo-customized-radios"
-          name="customized-radios"
-        >
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-            <Typography component='div' fontWeight={500} className="pl-5 md:pr-3 lg:pr-7 lg:pl-20 pt-6">
-              出生時の状況
-            </Typography>
-            <Grid item xs={4.5} sm={3.5} md={1.7}>
-              <FormControlLabel value="胃常なし" control={<Radio />} label="胃常なし" />
-            </Grid>
-            <Grid item xs={3.5} sm={3.5} md={1.3}>
-              <FormControlLabel value="あり" control={<Radio />} label="あり" />
-            </Grid>
-            <Grid item xs={10.5} sm={10} md={2}>
-              <TextField
-                className='w-full'
-                id="furigana-input"
-                label=""
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-          </Grid>
-        </RadioGroup>
-        {/* End Grid */}
-
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 md:pr-3 lg:pr-7 lg:pl-20 pt-6">
-            乳児期の様子
-          </Typography>
         </Grid>
 
-        {/* Start Grid */}
-        <RadioGroup
-          defaultValue=""
-          aria-labelledby="demo-customized-radios"
-          name="customized-radios"
-        >
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-            <Typography component='div' fontWeight={500} className="pl-14 pr-36 md:pr-64 lg:pr-7 lg:pl-32 pt-6">
-              栄養方法
-            </Typography>
-            <Grid item xs={3.5} sm={3} md={1.4}>
-              <FormControlLabel value="母乳" control={<Radio />} label="母乳" />
-            </Grid>
-            <Grid item xs={4.6} sm={3} md={1.4}>
-              <FormControlLabel value="混合" control={<Radio />} label="混合" />
-            </Grid>
-            <Grid item xs={3.7} sm={3.5} md={1.6}>
-              <FormControlLabel value="人工乳" control={<Radio />} label="人工乳" />
-            </Grid>
+        {/* Health Management Table Header - 健康管理台帳 */}
+        <Grid container spacing={2} className='pt-3 pl-3'>
+          <Grid item xs={12}>
+            <Box sx={{ border: '2px solid #000', p: 1, mb: 2, backgroundColor: '#f5f5f5' }}>
+              <Grid container spacing={1} alignItems="center">
+                <Grid item xs={12} sm={3}>
+                  <Typography fontWeight={600}>健康管理台帳(　者　)</Typography>
+                </Grid>
+                <Grid item xs={12} sm={2}>
+                  <Typography fontWeight={600}>健康個人入力</Typography>
+                </Grid>
+                <Grid item xs={12} sm={7}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <Typography>年度:</Typography>
+                    <TextField label="0歳児" size='small' sx={{ width: 80, backgroundColor: "white" }} />
+                    <TextField label="1歳児" size='small' sx={{ width: 80, backgroundColor: "white" }} />
+                    <TextField label="2歳児" size='small' sx={{ width: 80, backgroundColor: "white" }} />
+                    <TextField label="3歳児" size='small' sx={{ width: 80, backgroundColor: "white" }} />
+                    <TextField label="4歳児" size='small' sx={{ width: 80, backgroundColor: "white" }} />
+                    <TextField label="5歳児" size='small' sx={{ width: 80, backgroundColor: "white" }} />
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
           </Grid>
-        </RadioGroup>
-        {/* End Grid */}
+        </Grid>
 
-        {/* Start Grid */}
-        <RadioGroup
-          defaultValue=""
-          aria-labelledby="demo-customized-radios"
-          name="customized-radios"
-        >
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-2 pl-3' >
-            <Typography component='div' fontWeight={500} className="pl-14 pr-40 md:pr-[300px] lg:pr-[69px] lg:pl-32 pt-6">
-              離乳
-            </Typography>
-            <Grid item xs={4.1} sm={3.2} md={1.5} sx={{ marginLeft: { xs: 0, sm: 0, md: 0, lg: -0.5 } }}>
-              <FormControlLabel value="末開始" control={<Radio />} label="末開始" />
-            </Grid>
-            <Grid item xs={3.5} sm={3} md={1.3} sx={{ marginLeft: { xs: 0, sm: 0, md: 0, lg: -1 } }}>
-              <FormControlLabel value="か月" control={<Radio />} label="か月" />
-            </Grid>
-            <Grid item xs={4.3} sm={3} md={1.4} sx={{ marginLeft: { xs: 0, sm: 0, md: 0, lg: 0.5 } }}>
-              <FormControlLabel value="完了" control={<Radio />} label="完了" />
-            </Grid>
+        {/* Basic Information Table */}
+        <Grid container spacing={2} className='pt-3 pl-3'>
+          <Grid item xs={12}>
+            <Box sx={{ border: '2px solid #000' }}>
+              {/* Furigana and Name Row */}
+              <Grid container sx={{ borderBottom: '1px solid #000' }}>
+                <Grid item xs={12} sm={2} sx={{ borderRight: '1px solid #000', backgroundColor: '#f5f5f5', p: 1 }}>
+                  <Typography align="center">ふりがな</Typography>
+                  <Typography align="center" sx={{ mt: 2 }}>氏名</Typography>
+                </Grid>
+                <Grid item xs={12} sm={4} sx={{ borderRight: '1px solid #000' }}>
+                  <Box sx={{ p: 1 }}>
+                    <TextField
+                      fullWidth
+                      placeholder="やまだ　たろう"
+                      size='small'
+                      sx={{ backgroundColor: "white", mb: 1 }}
+                    />
+                    <TextField
+                      fullWidth
+                      placeholder="山田　太郎"
+                      size='small'
+                      sx={{ backgroundColor: "white" }}
+                    />
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={1} sx={{ borderRight: '1px solid #000', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography>男・女</Typography>
+                </Grid>
+                <Grid item xs={12} sm={2} sx={{ borderRight: '1px solid #000', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography>生年月日</Typography>
+                </Grid>
+                <Grid item xs={12} sm={3}>
+                  <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <FormControl size="small" sx={{ minWidth: 70 }}>
+                      <Select defaultValue="平成" sx={{ backgroundColor: "white" }}>
+                        <MenuItem value="平成">平成</MenuItem>
+                        <MenuItem value="令和">令和</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <TextField size='small' placeholder="年" sx={{ width: 50, backgroundColor: "white" }} />
+                    <Typography>年</Typography>
+                    <TextField size='small' placeholder="月" sx={{ width: 50, backgroundColor: "white" }} />
+                    <Typography>月</Typography>
+                    <TextField size='small' placeholder="日" sx={{ width: 50, backgroundColor: "white" }} />
+                    <Typography>日</Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+
+              {/* Gender Radio and Admission/Withdrawal Dates */}
+              <Grid container sx={{ borderBottom: '1px solid #000' }}>
+                <Grid item xs={12} sm={6} sx={{ borderRight: '1px solid #000', p: 1 }}>
+                  <RadioGroup row sx={{ justifyContent: 'center' }}>
+                    <FormControlLabel value="male" control={<Radio />} label="" />
+                  </RadioGroup>
+                </Grid>
+                <Grid item xs={12} sm={1} sx={{ borderRight: '1px solid #000', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography>入所</Typography>
+                </Grid>
+                <Grid item xs={12} sm={2} sx={{ borderRight: '1px solid #000' }}>
+                  <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                    <Typography fontSize="0.9rem">令和</Typography>
+                    <TextField size='small' placeholder="年" sx={{ width: 40, backgroundColor: "white" }} />
+                    <Typography fontSize="0.9rem">年</Typography>
+                    <TextField size='small' placeholder="月" sx={{ width: 40, backgroundColor: "white" }} />
+                    <Typography fontSize="0.9rem">月</Typography>
+                    <TextField size='small' placeholder="日" sx={{ width: 40, backgroundColor: "white" }} />
+                    <Typography fontSize="0.9rem">日</Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={1} sx={{ borderRight: '1px solid #000', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography>退所</Typography>
+                </Grid>
+                <Grid item xs={12} sm={2}>
+                  <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                    <Typography fontSize="0.9rem">令和</Typography>
+                    <TextField size='small' placeholder="年" sx={{ width: 40, backgroundColor: "white" }} />
+                    <Typography fontSize="0.9rem">年</Typography>
+                    <TextField size='small' placeholder="月" sx={{ width: 40, backgroundColor: "white" }} />
+                    <Typography fontSize="0.9rem">月</Typography>
+                    <TextField size='small' placeholder="日" sx={{ width: 40, backgroundColor: "white" }} />
+                    <Typography fontSize="0.9rem">日</Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+
+              {/* Address Section - 現住所 (3 rows) */}
+              {[1, 2, 3].map((row) => (
+                <Grid container key={row} sx={{ borderBottom: row === 3 ? 'none' : '1px solid #000' }}>
+                  {row === 1 && (
+                    <Grid item xs={12} sm={1} sx={{ borderRight: '1px solid #000', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', gridRow: 'span 3' }}>
+                      <Typography sx={{ writingMode: 'vertical-rl' }}>現住所</Typography>
+                    </Grid>
+                  )}
+                  {row > 1 && (
+                    <Grid item xs={12} sm={1} sx={{ borderRight: '1px solid #000' }}></Grid>
+                  )}
+                  <Grid item xs={12} sm={6} sx={{ borderRight: '1px solid #000' }}>
+                    <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography>〒</Typography>
+                      {row === 1 ? (
+                        <>
+                          <TextField size='small' placeholder="000-0000" sx={{ width: 120, backgroundColor: "white" }} />
+                          <Typography>福岡市</Typography>
+                          <TextField size='small' placeholder="区" sx={{ width: 100, backgroundColor: "white" }} />
+                          <Typography>区</Typography>
+                        </>
+                      ) : (
+                        <>
+                          <Typography sx={{ ml: 4 }}>福岡市</Typography>
+                          <TextField size='small' placeholder="区" sx={{ width: 100, backgroundColor: "white" }} />
+                          <Typography>区</Typography>
+                        </>
+                      )}
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={3} sx={{ borderRight: '1px solid #000' }}>
+                    <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography>TEL</Typography>
+                      <TextField
+                        size='small'
+                        placeholder="000-0000-0000"
+                        sx={{ flex: 1, backgroundColor: "white" }}
+                        onClick={() => handleInputClick(`address-tel-${row}`)}
+                        InputProps={{ readOnly: true }}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={2}>
+                    <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography>校区</Typography>
+                      <TextField size='small' sx={{ flex: 1, backgroundColor: "white" }} />
+                    </Box>
+                  </Grid>
+                </Grid>
+              ))}
+            </Box>
           </Grid>
-        </RadioGroup>
-        {/* End Grid */}
+        </Grid>
 
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' fontWeight={500} className="md:pl-5 md:pr-0 lg:pr-0 lg:pl-28 pt-6">
-            首のすわり
-          </Typography>
-          <Grid item xs={7.3} sm={6} md={2}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
+        <Numpad 
+          open={numpadOpen && (currentInputId.includes('address-tel') || currentInputId.includes('family-tel') || currentInputId.includes('family-mobile'))} 
+          onClose={() => setNumpadOpen(false)} 
+          onInput={handleNumpadInput} 
+        />
+
+{/* Family Table - 家族の状況 */}
+<Grid container spacing={2} className='pt-5 pl-3'>
+  <Grid item xs={12}>
+    <Box sx={{  display: 'flex' }}>
+      {/* Vertical Label - 家族の状況 */}
+      <Box sx={{ 
+        width: '50px',
+        display: 'flex',
+        border: '1px solid #000',
+        alignItems: 'center',
+        justifyContent: 'center',
+        writingMode: 'vertical-rl',
+        textOrientation: 'upright',
+        p: 2
+      }}>
+        <Typography sx={{ 
+          fontSize: '18px',
+          letterSpacing: '12px',
+          lineHeight: 1
+        }}>
+          家族の状況
+        </Typography>
+      </Box>
+
+      {/* Table Content */}
+      <Box sx={{ flex: 1, overflow: 'auto' }}>
+        <table style={{ 
+          width: '100%', 
+          backgroundColor: 'white'
+        }}>
+          <thead>
+            <tr style={{ backgroundColor: '#f5f5f5' }}>
+              <th style={{ 
+                width: '15%', 
+                border: '1px solid #000', 
+                padding: '8px',
+                fontWeight: 600,
+                textAlign: 'center'
+              }}>
+                氏名
+              </th>
+              <th style={{ 
+                width: '12%', 
+                border: '1px solid #000', 
+                padding: '8px',
+                fontWeight: 600,
+                textAlign: 'center'
+              }}>
+                生年月日
+              </th>
+              <th style={{ 
+                width: '8%', 
+                border: '1px solid #000', 
+                padding: '8px',
+                fontWeight: 600,
+                textAlign: 'center'
+              }}>
+                続柄
+              </th>
+              <th style={{ 
+                width: '18%', 
+                border: '1px solid #000', 
+                padding: '8px',
+                fontWeight: 600,
+                textAlign: 'center'
+              }}>
+                勤務先
+              </th>
+              <th style={{ 
+                width: '20%', 
+                border: '1px solid #000', 
+                padding: '8px',
+                fontWeight: 600,
+                textAlign: 'center'
+              }}>
+                勤務先住所
+              </th>
+              <th style={{ 
+                width: '20%', 
+                border: '1px solid #000', 
+                padding: '8px',
+                fontWeight: 600,
+                textAlign: 'center'
+              }}>
+                TEL
+              </th>
+              <th style={{ 
+                width: '7%', 
+                border: '1px solid #000', 
+                padding: '8px',
+                fontWeight: 600,
+                textAlign: 'center'
+              }}>
+                操作
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {familyMembers.map((member, index) => (
+              <>
+                {/* Upper Row - Main Info */}
+                <tr key={`${member.id}-main`}>
+                  {/* 氏名 */}
+                  <td 
+                    rowSpan={2}
+                    style={{ 
+                      border: '1px solid #000', 
+                      padding: '8px',
+                      verticalAlign: 'top',
+                  
+                    }}
+                  >
+                    {index === 0 && (
+                      <Typography fontSize="0.85rem" fontWeight={500} sx={{ mb: 0.5 }}>
+                        保護者
+                      </Typography>
+                    )}
+                    <TextField 
+                      fullWidth 
+                      size='small' 
+                      sx={{ 
+                        backgroundColor: "white",
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': { border: '1px solid #ccc' }
+                        }
+                      }} 
+                    />
+                  </td>
+
+                  {/* 生年月日 */}
+                  <td 
+                    rowSpan={2}
+                    style={{ 
+                      border: '1px solid #000', 
+                      padding: '8px',
+                      verticalAlign: 'top',
+                  
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.75rem">S・H</Typography>
+                        <TextField 
+                          size='small' 
+                          placeholder="年" 
+                          sx={{ 
+                            width: 70, 
+                            backgroundColor: "white",
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { border: '1px solid #ccc' }
+                            }
+                          }} 
+                        />
+                        <Typography fontSize="0.75rem">年</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <TextField 
+                          size='small' 
+                          placeholder="月" 
+                          sx={{ 
+                            width: 60, 
+                            backgroundColor: "white",
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { border: '1px solid #ccc' }
+                            }
+                          }} 
+                        />
+                        <Typography fontSize="0.75rem">月</Typography>
+                        <TextField 
+                          size='small' 
+                          placeholder="日" 
+                          sx={{ 
+                            width: 60, 
+                            backgroundColor: "white",
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { border: '1px solid #ccc' }
+                            }
+                          }} 
+                        />
+                        <Typography fontSize="0.75rem">日</Typography>
+                      </Box>
+                    </Box>
+                  </td>
+
+                  {/* 続柄 */}
+                  <td 
+                    rowSpan={2}
+                    style={{ 
+                      border: '1px solid #000', 
+                      padding: '8px',
+                      verticalAlign: 'top',
+                  
+                    }}
+                  >
+                    <TextField 
+                      fullWidth 
+                      size='small' 
+                      sx={{ 
+                        backgroundColor: "white",
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': { border: '1px solid #ccc' }
+                        }
+                      }} 
+                    />
+                  </td>
+
+                  {/* 勤務先 */}
+                  <td style={{ 
+                    border: '1px solid #000', 
+                    padding: '8px',
+                    verticalAlign: 'top',
+                
+                  }}>
+                    <TextField 
+                      fullWidth 
+                      multiline
+                      rows={2}
+                      sx={{ 
+                        backgroundColor: "white",
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': { border: '1px solid #ccc' }
+                        }
+                      }} 
+                    />
+                  </td>
+
+                  {/* 勤務先住所 */}
+                  <td style={{ 
+                    border: '1px solid #000', 
+                    padding: '8px',
+                    verticalAlign: 'top',
+                
+                  }}>
+                    <TextField 
+                      fullWidth 
+                      multiline
+                      rows={2}
+                      sx={{ 
+                        backgroundColor: "white",
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': { border: '1px solid #ccc' }
+                        }
+                      }} 
+                    />
+                  </td>
+
+                  {/* TEL */}
+                  <td style={{ 
+                    border: '1px solid #000', 
+                    padding: '8px',
+                    verticalAlign: 'top',
+                
+                  }}>
+                    <TextField 
+                      fullWidth 
+                      size='small' 
+                      placeholder="TEL"
+                      sx={{ 
+                        backgroundColor: "white",
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': { border: '1px solid #ccc' }
+                        }
+                      }} 
+                    />
+                  </td>
+
+                  {/* Delete Button */}
+                  <td 
+                    rowSpan={2}
+                    style={{ 
+                      border: '1px solid #000', 
+                      padding: '8px',
+                      textAlign: 'center',
+                      verticalAlign: 'middle'
+                    }}
+                  >
+                    {familyMembers.length > 1 && (
+                      <Button
+                        variant="contained"
+                        color="error"
+                        size="small"
+                        onClick={() => removeFamilyMember(member.id)}
+                        sx={{ minWidth: 'auto', px: 1 }}
+                      >
+                        削除
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+
+                {/* Lower Row - 携帯番号 */}
+                <tr key={`${member.id}-mobile`}>
+                  <td 
+                    colSpan={3} 
+                    style={{ 
+                      border: '1px solid #000', 
+                      padding: '8px',
+                      borderTop: '1px dotted #999',
+                  
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Typography fontSize="0.85rem" sx={{ whiteSpace: 'nowrap' }}>
+                        携帯番号：
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        size='small'
+                        placeholder=""
+                        sx={{ 
+                          backgroundColor: "white",
+                          '& .MuiOutlinedInput-root': {
+                            '& fieldset': { border: '1px solid #ccc' }
+                          }
+                        }}
+                      />
+                    </Box>
+                  </td>
+                </tr>
+              </>
+            ))}
+          </tbody>
+        </table>
+      </Box>
+    </Box>
+  </Grid>
+
+  {/* Add Family Member Button */}
+  <Grid item xs={12}>
+    <Button
+      variant="contained"
+      color="success"
+      onClick={addFamilyMember}
+      sx={{ mt: 2 }}
+    >
+      ➕ 家族を追加
+    </Button>
+  </Grid>
+</Grid>
+        {/* 通所（園）方法 and かかりつけの病院 Section */}
+        <Grid container spacing={2} className='pt-5 pl-3'> 
+          <Grid item xs={12}> 
+            <Box sx={{ border: '2px solid #000' }}> 
+              <Grid container> 
+                {/* Left side - 通所（園）方法 */} 
+                <Grid item xs={12} sm={6} sx={{ borderRight: '1px solid #000' }}> 
+                  <Box sx={{ display: 'flex', height: '100%' }}> 
+                    {/* Vertical Label */}
+                    <Box sx={{ 
+                      borderRight: '1px solid #000',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      p: 1,
+                      minWidth: '40px',
+                      writingMode: 'vertical-rl',
+                      textOrientation: 'upright'
+                    }}>
+                      <Typography sx={{ 
+                        fontSize: '16px',
+                        letterSpacing: '8px',
+                        lineHeight: 1
+                      }}>
+                        通所（園）方法
+                      </Typography>
+                    </Box>
+
+                    {/* Content Area */}
+                    <Box sx={{ flex: 1, p: 2 }}>
+                      {/* Transportation Methods */}
+                      <RadioGroup>
+                        <FormControlLabel 
+                          value="walk" 
+                          control={<Radio />} 
+                          label="徒歩" 
+                        />
+                        <FormControlLabel 
+                          value="bicycle" 
+                          control={<Radio />} 
+                          label="自転車" 
+                        />
+                      </RadioGroup>
+
+                      {/* Details Input */}
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" sx={{ mb: 1 }}>詳細：</Typography>
+                        <TextField 
+                          fullWidth 
+                          multiline 
+                          rows={5} 
+                          placeholder="詳細を入力してください"
+                          sx={{ backgroundColor: "white" }} 
+                        />
+                      </Box>
+                    </Box>
+                  </Box>
+                </Grid> 
+
+                {/* Right side - かかりつけの病院 */} 
+                <Grid item xs={12} sm={6}> 
+                  <Box>
+                    {/* Header */}
+                    <Box sx={{ 
+                      borderBottom: '1px solid #000',
+                      p: 1.5,
+                      textAlign: 'center',
+                      backgroundColor: '#f5f5f5'
+                    }}>
+                      <Typography fontWeight={600}>かかりつけの病院</Typography>
+                    </Box>
+
+                    {/* Hospital entries */}
+                    {[ 
+                      { label: '小児科', id: 'pediatrics' }, 
+                      { label: '内　科', id: 'internal' }, 
+                      { label: '外　科', id: 'surgery' }, 
+                      { label: '歯　科', id: 'dental' }, 
+                      { label: '　　科', id: 'other1' }, 
+                      { label: '　　科', id: 'other2' } 
+                    ].map((dept) => ( 
+                      <Box 
+                        key={dept.id} 
+                        sx={{ 
+                          display: 'flex',
+                          borderBottom: '1px solid #000',
+                          minHeight: '50px'
+                        }}
+                      > 
+                        {/* Department Name */}
+                        <Box sx={{ 
+                          width: '30%',
+                          borderRight: '1px solid #000',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          p: 1
+                        }}>
+                          <Typography>{dept.label}</Typography>
+                        </Box>
+
+                        {/* Tel Input */}
+                        <Box sx={{ 
+                          flex: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          p: 1,
+                          gap: 1
+                        }}>
+                          <Typography>TEL (</Typography> 
+                          <TextField 
+                            size='small' 
+                            placeholder="" 
+                            sx={{ 
+                              flex: 1, 
+                              backgroundColor: "white",
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': {
+                                  border: 'none'
+                                }
+                              }
+                            }} 
+                          /> 
+                          <Typography>)</Typography> 
+                        </Box>
+                      </Box> 
+                    ))} 
+
+                    {/* Blood Type */} 
+                    <Box sx={{ 
+                      display: 'flex',
+                      minHeight: '60px'
+                    }}> 
+                      {/* Label */}
+                      <Box sx={{ 
+                        width: '30%',
+                        borderRight: '1px solid #000',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        p: 1
+                      }}>
+                        <Typography fontWeight={600}>血液型</Typography>
+                      </Box>
+
+                      {/* Input */}
+                      <Box sx={{ 
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
+                        p: 2,
+                        gap: 1
+                      }}>
+                        <TextField 
+                          size='small' 
+                          placeholder="" 
+                          sx={{ 
+                            width: 100, 
+                            backgroundColor: "white",
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': {
+                                border: 'none'
+                              }
+                            }
+                          }} 
+                        /> 
+                        <Typography>型</Typography> 
+                      </Box>
+                    </Box> 
+                  </Box> 
+                </Grid> 
+              </Grid> 
+            </Box> 
+          </Grid> 
+        </Grid>
+
+        {/* 予防接種状況 Section */}
+        <Grid container spacing={2} className='pt-5 pl-3'>
+          <Grid item xs={12}>
+            <Box sx={{ border: '2px solid #000' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <tbody>
+                  {/* 妊娠中の状況 Row */}
+                  <tr>
+                    <td style={{ width: '10%', borderRight: '1px solid #000', borderBottom: '1px solid #000', padding: '8px', verticalAlign: 'middle' }}>
+                      <Typography fontWeight={600}>妊娠中の状況</Typography>
+                    </td>
+                    <td style={{ borderBottom: '1px solid #000', padding: '8px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                        <RadioGroup row>
+                          <FormControlLabel value="normal" control={<Radio size="small" />} label="異常なし" />
+                          <FormControlLabel value="abnormal" control={<Radio size="small" />} label="あり" />
+                        </RadioGroup>
+                        <Typography>（</Typography>
+                        <TextField size='small' sx={{ width: 150, backgroundColor: "white" }} />
+                        <Typography>）</Typography>
+                        <Typography fontWeight={600} sx={{ ml: 2 }}>妊娠期間</Typography>
+                        <TextField size='small' sx={{ width: 80, backgroundColor: "white" }} />
+                        <Typography>週</Typography>
+                        <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center' }}>
+                          <Typography fontWeight={600} fontSize="1.2rem">第</Typography>
+                          <TextField size='small' sx={{ width: 60, backgroundColor: "white", mx: 1 }} />
+                          <Typography fontWeight={600} fontSize="1.2rem">子</Typography>
+                        </Box>
+                      </Box>
+                    </td>
+                  </tr>
+
+                  {/* 分娩時の状況 Row */}
+                  <tr>
+                    <td style={{ width: '10%', borderRight: '1px solid #000', borderBottom: '1px solid #000', padding: '8px', verticalAlign: 'middle' }}>
+                      <Typography fontWeight={600}>分娩時の状況</Typography>
+                    </td>
+                    <td style={{ borderBottom: '1px solid #000', padding: '8px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                        <RadioGroup row>
+                          <FormControlLabel value="normal" control={<Radio size="small" />} label="異常なし" />
+                          <FormControlLabel value="abnormal" control={<Radio size="small" />} label="あり" />
+                        </RadioGroup>
+                        <Typography>（</Typography>
+                        <TextField size='small' sx={{ width: 150, backgroundColor: "white" }} />
+                        <Typography>）</Typography>
+                        <Typography fontWeight={600} sx={{ ml: 2 }}>出生時体重</Typography>
+                        <Typography>（</Typography>
+                        <TextField size='small' sx={{ width: 100, backgroundColor: "white" }} />
+                        <Typography>g）</Typography>
+                      </Box>
+                    </td>
+                  </tr>
+
+                 {/* 出生時の状況 Row */}
+                  <tr>
+                    <td style={{ width: '10%', borderRight: '1px solid #000', borderBottom: '1px solid #000', padding: '8px', verticalAlign: 'top' }}>
+                      <Typography fontWeight={600}>出生時の状況</Typography>
+                    </td>
+                    <td style={{ borderBottom: '1px solid #000', padding: '8px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                        {/* Main selection: 異常なし or あり */}
+                        <RadioGroup 
+                          row 
+                          value={birthCondition}
+                          onChange={(e) => {
+                            setBirthCondition(e.target.value);
+                            if (e.target.value === 'normal') {
+                              setBirthDetails([]);
+                              setBirthOther('');
+                            }
+                          }}
+                        >
+                          <FormControlLabel value="normal" control={<Radio size="small" />} label="異常なし" />
+                          <FormControlLabel value="abnormal" control={<Radio size="small" />} label="あり" />
+                        </RadioGroup>
+
+                        {/* Detail checkboxes - always visible but disabled when 'normal' */}
+                        <FormControlLabel 
+                          control={
+                            <Checkbox 
+                              size="small" 
+                              checked={birthDetails.includes('仮死')}
+                              disabled={birthCondition === 'normal'}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setBirthDetails([...birthDetails, '仮死']);
+                                } else {
+                                  setBirthDetails(birthDetails.filter(d => d !== '仮死'));
+                                }
+                              }}
+                            />
+                          } 
+                          label="仮死" 
+                        />
+                        <FormControlLabel 
+                          control={
+                            <Checkbox 
+                              size="small"
+                              checked={birthDetails.includes('けいれん')}
+                              disabled={birthCondition === 'normal'}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setBirthDetails([...birthDetails, 'けいれん']);
+                                } else {
+                                  setBirthDetails(birthDetails.filter(d => d !== 'けいれん'));
+                                }
+                              }}
+                            />
+                          } 
+                          label="けいれん" 
+                        />
+                        <FormControlLabel 
+                          control={
+                            <Checkbox 
+                              size="small"
+                              checked={birthDetails.includes('強い黄疸')}
+                              disabled={birthCondition === 'normal'}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setBirthDetails([...birthDetails, '強い黄疸']);
+                                } else {
+                                  setBirthDetails(birthDetails.filter(d => d !== '強い黄疸'));
+                                }
+                              }}
+                            />
+                          } 
+                          label="強い黄疸" 
+                        />
+                        <FormControlLabel 
+                          control={
+                            <Checkbox 
+                              size="small"
+                              checked={birthDetails.includes('呼吸異常')}
+                              disabled={birthCondition === 'normal'}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setBirthDetails([...birthDetails, '呼吸異常']);
+                                } else {
+                                  setBirthDetails(birthDetails.filter(d => d !== '呼吸異常'));
+                                }
+                              }}
+                            />
+                          } 
+                          label="呼吸異常" 
+                        />
+                        <FormControlLabel 
+                          control={
+                            <Checkbox 
+                              size="small"
+                              checked={birthDetails.includes('先天性代謝異常')}
+                              disabled={birthCondition === 'normal'}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setBirthDetails([...birthDetails, '先天性代謝異常']);
+                                } else {
+                                  setBirthDetails(birthDetails.filter(d => d !== '先天性代謝異常'));
+                                }
+                              }}
+                            />
+                          } 
+                          label="先天性代謝異常" 
+                        />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <FormControlLabel 
+                            control={
+                              <Checkbox 
+                                size="small"
+                                checked={birthDetails.includes('その他')}
+                                disabled={birthCondition === 'normal'}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setBirthDetails([...birthDetails, 'その他']);
+                                  } else {
+                                    setBirthDetails(birthDetails.filter(d => d !== 'その他'));
+                                    setBirthOther('');
+                                  }
+                                }}
+                              />
+                            } 
+                            label="その他" 
+                          />
+                          <Typography>（</Typography>
+                          <TextField 
+                            size='small' 
+                            sx={{ width: 200, backgroundColor: "white" }}
+                            value={birthOther}
+                            onChange={(e) => setBirthOther(e.target.value)}
+                            disabled={birthCondition === 'normal' || !birthDetails.includes('その他')}
+                          />
+                          <Typography>）</Typography>
+                        </Box>
+                      </Box>
+                    </td>
+                  </tr>
+
+                  {/* 乳児期の様子 Row */}
+                  <tr>
+                    <td style={{ width: '10%', borderRight: '1px solid #000', padding: '8px', verticalAlign: 'top' }}>
+                      <Typography fontWeight={600}>乳児期の様子</Typography>
+                    </td>
+                    <td style={{ padding: '8px' }}>
+                      {/* First Row - 栄養方法 and 離乳 */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 1 }}>
+                        <Typography>栄養方法</Typography>
+                        <RadioGroup row>
+                          <FormControlLabel value="母乳" control={<Radio size="small" />} label="母乳" />
+                          <FormControlLabel value="混合" control={<Radio size="small" />} label="混合" />
+                          <FormControlLabel value="人工乳" control={<Radio size="small" />} label="人工乳" />
+                        </RadioGroup>
+                        
+                        <Typography sx={{ ml: 2 }}>離乳</Typography>
+                        <RadioGroup row sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
+                          <FormControlLabel value="未開始" control={<Radio size="small" />} label="未開始" />
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <FormControlLabel value="開始" control={<Radio size="small" />} label="開始" />
+                            <TextField size='small' sx={{ width: 60, backgroundColor: "white" }} />
+                            <Typography>か月</Typography>
+                          </Box>
+                        </RadioGroup>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Typography>完了</Typography>
+                          <TextField size='small' sx={{ width: 60, backgroundColor: "white" }} />
+                          <Typography>か月</Typography>
+                        </Box>
+                      </Box>
+
+                      {/* Second Row - Development milestones */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                        <Typography>首のすわり（</Typography>
+                        <TextField size='small' sx={{ width: 60, backgroundColor: "white" }} />
+                        <Typography>か月）</Typography>
+                        <Typography>はいはい（</Typography>
+                        <TextField size='small' sx={{ width: 60, backgroundColor: "white" }} />
+                        <Typography>か月）</Typography>
+                        <Typography>ひとり歩き（</Typography>
+                        <TextField size='small' sx={{ width: 60, backgroundColor: "white" }} />
+                        <Typography>か月）</Typography>
+                        <Typography>"ママ"などの言葉（</Typography>
+                        <TextField size='small' sx={{ width: 60, backgroundColor: "white" }} />
+                        <Typography>か月）</Typography>
+                      </Box>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </Box>
+          </Grid>
+        </Grid>
+        
+        {/* Vaccination Status Table */}
+        <Grid container spacing={2} className="pt-5 pl-3">
+          <Grid item xs={12}>
+            {/* Vaccination Table */}
+            <Box sx={{ border: '2px solid #000' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <tbody>
+                  <tr>
+                    {/* 予防接種状況 column header */}
+                    <td
+                      rowSpan={10}
+                      style={{
+                        width: '3%',
+                        borderRight: '1px solid #000',
+                        padding: '8px',
+                        backgroundColor: '#f5f5f5',
+                        verticalAlign: 'middle',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 0.5,
+                        }}
+                      >
+                        {['予', '防', '接', '種', '状', '況'].map((char, i) => (
+                          <Typography key={i} fontWeight={600} fontSize="0.95rem">
+                            {char}
+                          </Typography>
+                        ))}
+                      </Box>
+                    </td>
+
+                    {/* Vaccine name column header */}
+                    <td
+                      rowSpan={1}
+                      style={{
+                        width: '8%',
+                        borderRight: '1px solid #000',
+                        borderBottom: '1px solid #000',
+                        padding: '8px',
+                        backgroundColor: '#f5f5f5',
+                        verticalAlign: 'middle',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <Typography fontWeight={600}>ワクチン名</Typography>
+                    </td>
+
+                    {/* Age timeline header */}
+                    <td
+                      colSpan={84} // 72 → 84
+                      style={{
+                        borderBottom: '1px solid #000',
+                        padding: '8px',
+                        backgroundColor: '#f5f5f5',
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', position: 'relative', height: '24px' }}>
+                        {/* 0–24ヶ月 = 24 unit, 24–72ヶ月 = 48×0.3, 余白含め TOTAL_UNITS = 42 */}
+                        <Typography
+                          fontWeight={600}
+                          fontSize="0.75rem"
+                          sx={{
+                            position: 'absolute',
+                            left: `${(3 / TOTAL_UNITS) * 100}%`,
+                            transform: 'translateX(-50%)',
+                            color: '#000',
+                          }}
+                        >
+                          3か月
+                        </Typography>
+                        <Typography
+                          fontWeight={600}
+                          fontSize="0.75rem"
+                          sx={{
+                            position: 'absolute',
+                            left: `${(6 / TOTAL_UNITS) * 100}%`,
+                            transform: 'translateX(-50%)',
+                            color: '#000',
+                          }}
+                        >
+                          6か月
+                        </Typography>
+                        <Typography
+                          fontWeight={600}
+                          fontSize="0.75rem"
+                          sx={{
+                            position: 'absolute',
+                            left: `${(9 / TOTAL_UNITS) * 100}%`,
+                            transform: 'translateX(-50%)',
+                            color: '#000',
+                          }}
+                        >
+                          9か月
+                        </Typography>
+                        <Typography
+                          fontWeight={600}
+                          fontSize="0.75rem"
+                          sx={{
+                            position: 'absolute',
+                            left: `${(12 / TOTAL_UNITS) * 100}%`,
+                            transform: 'translateX(-50%)',
+                            color: '#000',
+                          }}
+                        >
+                          1歳
+                        </Typography>
+                        <Typography
+                          fontWeight={600}
+                          fontSize="0.75rem"
+                          sx={{
+                            position: 'absolute',
+                            left: `${(18 / TOTAL_UNITS) * 100}%`,
+                            transform: 'translateX(-50%)',
+                            color: '#000',
+                          }}
+                        >
+                          1歳6か月
+                        </Typography>
+                        <Typography
+                          fontWeight={600}
+                          fontSize="0.75rem"
+                          sx={{
+                            position: 'absolute',
+                            left: `${(24 / TOTAL_UNITS) * 100}%`,
+                            transform: 'translateX(-50%)',
+                            color: '#000',
+                          }}
+                        >
+                          2歳
+                        </Typography>
+                        <Typography
+                          fontWeight={600}
+                          fontSize="0.75rem"
+                          sx={{
+                            position: 'absolute',
+                            left: `${((24 + (36 - 24) * 0.3) / TOTAL_UNITS) * 100}%`,
+                            transform: 'translateX(-50%)',
+                            color: '#000',
+                          }}
+                        >
+                          3歳
+                        </Typography>
+                        <Typography
+                          fontWeight={600}
+                          fontSize="0.75rem"
+                          sx={{
+                            position: 'absolute',
+                            left: `${((24 + (48 - 24) * 0.3) / TOTAL_UNITS) * 100}%`,
+                            transform: 'translateX(-50%)',
+                            color: '#000',
+                          }}
+                        >
+                          4歳
+                        </Typography>
+                        <Typography
+                          fontWeight={600}
+                          fontSize="0.75rem"
+                          sx={{
+                            position: 'absolute',
+                            left: `${((24 + (60 - 24) * 0.3) / TOTAL_UNITS) * 100}%`,
+                            transform: 'translateX(-50%)',
+                            color: '#000',
+                          }}
+                        >
+                          5歳
+                        </Typography>
+                        <Typography
+                          fontWeight={600}
+                          fontSize="0.75rem"
+                          sx={{
+                            position: 'absolute',
+                            // ここで 72ヶ月 も TOTAL_UNITS=42 で割るので 右端より少し内側になる
+                            left: `${((24 + (72 - 24) * 0.3) / TOTAL_UNITS) * 100}%`,
+                            transform: 'translateX(-50%)',
+                            color: '#000',
+                          }}
+                        >
+                          6歳
+                        </Typography>
+                      </Box>
+                    </td>
+                  </tr>
+
+                  {/* Vaccination rows */}
+                  {[
+                    {
+                      name: 'B型肝炎',
+                      bars: [{ start: 0, end: 8, type: 'standard' }],
+                    },
+                    {
+                      name: 'BCG',
+                      bars: [{ start: 5, end: 12, type: 'standard' }],
+                    },
+                    {
+                      name: '4種混合',
+                      bars: [{ start: 2, end: 12, type: 'standard' }],
+                    },
+                    {
+                      name: 'ロタウイルス',
+                      bars: [{ start: 2, end: 8, type: 'recommended' }],
+                    },
+                    {
+                      name: '麻しん(はしか)\n風しん',
+                      bars: [
+                        { start: 12, end: 15, type: 'recommended' },
+                        { start: 12, end: 24, type: 'standard' },
+                        { start: 60, end: 72, type: 'recommended' },
+                      ],
+                    },
+                    {
+                      name: '日本脳炎',
+                      bars: [{ start: 36, end: 72, type: 'standard' }],
+                    },
+                    {
+                      name: 'ヒブ',
+                      bars: [{ start: 2, end: 60, type: 'combined' }],
+                    },
+                    {
+                      name: '小児肺炎球菌',
+                      bars: [{ start: 2, end: 60, type: 'combined' }],
+                    },
+                    {
+                      name: '水痘\n(みずぼうそう)',
+                      bars: [
+                        { start: 12, end: 15, type: 'recommended' },
+                        { start: 12, end: 36, type: 'standard' },
+                      ],
+                    },
+                  ].map((vaccine, index) => (
+                    <tr key={index}>
+                      <td
+                        style={{
+                          borderRight: '1px solid #000',
+                          borderBottom: index === 8 ? 'none' : '1px solid #000',
+                          padding: '8px',
+                          verticalAlign: 'middle',
+                          width: '8%',
+                        }}
+                      >
+                        <Typography
+                          fontSize="0.85rem"
+                          fontWeight={600}
+                          sx={{ whiteSpace: 'pre-line' }}
+                        >
+                          {vaccine.name}
+                        </Typography>
+                      </td>
+                      <td
+                        colSpan={84}
+                        style={{
+                          borderBottom: index === 8 ? 'none' : '1px solid #000',
+                          padding: 0,
+                          position: 'relative',
+                          height: '40px',
+                        }}
+                      >
+                        {/* Grid lines */}
+                        
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: '100%',
+                          display: 'flex',
+                        }}
+                      >
+                        {[...Array(84)].map((_, i) => {
+                          // i = 0–71 → 0–72ヶ月ぶん
+                          // i = 72–83 → 余白用の列
+                          const isYearBoundary = [36, 48, 60, 72].includes(i); // ★ เพิ่ม 72
+                          const showLine = i < 24 || isYearBoundary;           // ★ ยังใช้เงื่อนไขเดิม
+
+                          let flexValue: number;
+                          if (i < 24) {
+                            flexValue = 1; // 0–24ヶ月
+                          } else if (i < 72) {
+                            flexValue = 0.3; // 24–72ヶ月
+                          } else {
+                            flexValue = 0.3; // padding 部分も同じ幅
+                          }
+
+                          return (
+                            <Box
+                              key={i}
+                              sx={{
+                                flex: flexValue,
+                                borderRight:
+                                  i === 83
+                                    ? 'none'
+                                    : showLine               // ★ ตัดเงื่อนไข i < 72 ออก
+                                    ? '1px dashed #ddd'
+                                    : 'none',
+                              }}
+                            />
+                          );
+                        })}
+                      </Box>
+
+
+                        {/* Vaccination bars */}
+                        {vaccine.bars.map((bar, barIndex) => {
+                          let bgColor = '#b8cce4'; // recommended (blue)
+                          let borderColor = '#7fa3cc';
+
+                          if (bar.type === 'standard') {
+                            bgColor = '#d9d9d9';
+                            borderColor = '#b0b0b0';
+                          } else if (bar.type === 'combined') {
+                            bgColor = '#b8cce4';
+                            borderColor = '#7fa3cc';
+                          }
+
+                          const startPercent = calculatePosition(bar.start);
+                          const endPercent = calculatePosition(bar.end);
+                          const widthPercent = endPercent - startPercent;
+
+                          return (
+                            <Box
+                              key={barIndex}
+                              sx={{
+                                position: 'absolute',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                left: `${startPercent}%`,
+                                width: `${widthPercent}%`,
+                                height: 16,
+                                backgroundColor: bgColor,
+                                border: `1px solid ${borderColor}`,
+                                boxSizing: 'border-box',
+                                zIndex: 1,
+                              }}
+                            />
+                          );
+                        })}
+
+                        {/* Combined bar for later period (for ヒブ and 小児肺炎球菌) */}
+                        {(vaccine.name === 'ヒブ' || vaccine.name === '小児肺炎球菌') && (
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                              left: `${calculatePosition(12)}%`,
+                              width: `${
+                                calculatePosition(60) - calculatePosition(12)
+                              }%`,
+                              height: 16,
+                              backgroundColor: '#d9d9d9',
+                              border: '1px solid #b0b0b0',
+                              boxSizing: 'border-box',
+                              zIndex: 1,
+                            }}
+                          />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Box>
+
+            {/* Legend and Notes */}
+            <Box
               sx={{
-                backgroundColor: "white",
+                p: 2,
+                backgroundColor: '#fff5f5',
+                border: '2px solid #000',
+                borderTop: 'none',
+                textAlign: 'left',           // ★ บังคับข้อความชิดซ้าย
               }}
-            />
-          </Grid>
-          <Typography component='div' fontWeight={500} className="pl-2 md:pl-2 md:pr-[40px] lg:pr-16 lg:pl-[5px] pt-6">
-            か月
-          </Typography>
-
-          <Typography component='div' fontWeight={500} className="pl-4 md:pl-9 md:pr-[0px] lg:pr-0 lg:pl-[100px] pt-6">
-            はいはい
-          </Typography>
-          <Grid item xs={7.3} sm={6} md={2}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Typography component='div' fontWeight={500} className="pl-2 md:pl-2 md:pr-[40px] lg:pr-16 lg:pl-[5px] pt-6">
-            か月
-          </Typography>
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-5 pl-3' >
-          <Typography component='div' fontWeight={500} className="md:pl-5 md:pr-0 lg:pr-0 lg:pl-28 pt-6">
-            ひとり歩き
-          </Typography>
-          <Grid item xs={7.3} sm={6} md={2}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Typography component='div' fontWeight={500} className="pl-2 md:pl-2 md:pr-[40px] lg:pr-16 lg:pl-[5px] pt-6">
-            か月
-          </Typography>
-
-          <Typography component='div' fontWeight={500} className="md:pl-0 md:pr-[0px] lg:pr-0 lg:pl-[25px] pt-6">
-            "マンマ"などの言葉
-          </Typography>
-          <Grid item xs={5.3} sm={4.9} md={2}>
-            <TextField
-              className='w-full'
-              id="furigana-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Typography component='div' fontWeight={500} className="pl-2 md:pl-2 md:pr-[40px] lg:pr-16 lg:pl-[5px] pt-6">
-            か月
-          </Typography>
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Card */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-10 pl-20' >
-          <Card sx={{ bgcolor: "pink", width: 150, height: 40 }}>
-            <Typography component='div' className="pt-2">
-              予防接種状況
-            </Typography>
-          </Card>
-        </Grid>
-        {/* End Card */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 0 }} className='pt-3 pl-3' >
-          <Typography component='div' fontWeight={300} className="pl-3 md:pl-[10px] md:pr-[0px] lg:pr-0 lg:pl-[40px] pt-9">
-            B型肝炎
-          </Typography>
-          <Grid item xs={9} sm={5.8} md={2.5} lg={2.7} sx={{ marginLeft: { xs: 0, sm: -0.5, md: 0, lg: -1 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="Start date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={9} sm={5.8} md={2.5} lg={2.7} sx={{ marginLeft: { xs: 9, sm: -7.5, md: 0, lg: -6 }, marginTop: { xs: -4, sm: 0, md: 0 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="End date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-
-          <Typography component='div' fontWeight={300} className="pl-3 md:pl-9 md:pr-[0px] lg:pr-0 lg:pl-[60px] pt-9">
-            BCG
-          </Typography>
-          <Grid item xs={9} sm={5.8} md={2.7} sx={{ marginLeft: { xs: 3, sm: -0.5, md: 0, lg: -1 }, marginTop: { xs: -1.5, sm: 0, md: 0 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="Start date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={9} sm={5.8} md={2.7} sx={{ marginLeft: { xs: 9, sm: -7.5, md: 0, lg: -6 }, marginTop: { xs: -4, sm: 0, md: 0 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="End date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 0 }} className='pt-1 pl-3' >
-          <Typography component='div' fontWeight={300} className="pl-3 md:pl-[15px] md:pr-[0px] lg:pr-0 lg:pl-[40px] pt-9">
-            4種混合
-          </Typography>
-          <Grid item xs={9} sm={5.8} md={2.5} lg={2.7} sx={{ marginLeft: { xs: 0, sm: -0.5, md: 0, lg: -1 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="Start date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={9} sm={5.8} md={2.5} lg={2.7} sx={{ marginLeft: { xs: 8.7, sm: -7.5, md: 0, lg: -6 }, marginTop: { xs: -4, sm: 0, md: 0 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="End date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-
-          <Typography component='div' fontWeight={500} className="md:pr-[0px] lg:pr-0 lg:pl-[0px] pt-9">
-            ロタウイルス
-          </Typography>
-          <Grid item xs={9} sm={5.8} md={2.7} lg={2.7} sx={{ marginLeft: { xs: -3, sm: -3.5, md: 0, lg: -1 }, marginTop: { xs: -1.5, sm: 0, md: 0 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="Start date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={9} sm={5.8} md={2.7} lg={2.7} sx={{ marginLeft: { xs: 9, sm: -7.5, md: 0, lg: -6 }, marginTop: { xs: -4, sm: 0, md: 0 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="End date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 0 }} className='pt-1' >
-          <Typography component='div' fontWeight={300} className="pl-3 md:pl-[7px] md:pr-[0px] lg:pr-0 lg:pl-[0px] pt-9">
-            麻しん(はしか)<br />風しん
-          </Typography>
-          <Grid item xs={9} sm={5.8} md={2.5} lg={2.7} sx={{ marginLeft: { xs: -4.5, sm: -4.7, md: 0, lg: -1 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="Start date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={9} sm={5.8} md={2.5} lg={2.7} sx={{ marginLeft: { xs: 10.5, sm: -7.8, md: 0, lg: -6 }, marginTop: { xs: -4, sm: 0, md: 0 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="End date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-
-          <Typography component='div' fontWeight={500} className="pl-3 md:pl-9 md:pr-[0px] lg:pr-0 lg:pl-[25px] pt-9">
-            日本脳炎
-          </Typography>
-          <Grid item xs={9} sm={5.8} md={2.7} lg={2.7} sx={{ marginLeft: { xs: 1, sm: -3, md: 0, lg: -0.5 }, marginTop: { xs: -1.5, sm: 0, md: 0 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="Start date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={9} sm={5.8} md={2.7} lg={2.7} sx={{ marginLeft: { xs: 10.5, sm: -7.8, md: 0, lg: -6 }, marginTop: { xs: -4, sm: 0, md: 0 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="End date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 0 }} className='pt-1' >
-          <Typography component='div' fontWeight={300} sx={{ marginLeft: { xs: 0, sm: 0, md: 0, lg: -1 } }} className="pl-1 md:pl-[10px] md:pr-[0px] lg:pr-0 lg:pl-[0px] pt-9">
-            水痘(水ぼうそう)
-          </Typography>
-          <Grid item xs={9} sm={5.5} md={2.5} lg={2.7} sx={{ marginLeft: { xs: -5.5, sm: -4, md: 0, lg: -2 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="Start date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={9} sm={5.6} md={2.5} lg={2.7} sx={{ marginLeft: { xs: 10.5, sm: -9.1, md: 0, lg: -6 }, marginTop: { xs: -4, sm: 0, md: 0 } }} className='scale-75' >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={['DatePicker']}>
-                <DatePicker label="End date" sx={{ backgroundColor: "white" }} />
-              </DemoContainer>
-            </LocalizationProvider>
-          </Grid>
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Card */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-7 pl-20' >
-          <Card sx={{ bgcolor: "pink", width: 120, height: 40 }}>
-            <Typography component='div' className="pt-2">
-              乳,幼児健診
-            </Typography>
-          </Card>
-        </Grid>
-        {/* End Card */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' className="pl-[45px] md:pl-[60px] lg:pl-28 pt-6">
-            4か月
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.5}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Typography component='div' className="pl-5 pt-6 md:pl-7 md:pr-0 lg:pl-0"></Typography>
-          <Grid item xs={3.3} sm={4} md={1.2}>
-            <TextField
-              className='w-full'
-              id="-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-
-          <Typography component='div' className="pl-2 pt-6 lg:pl-1 lg:pr-4 ">
-            年
-          </Typography>
-          <Typography component='div' className="pl-[85px] pt-6 md:pl-[100px] lg:pl-0 "></Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            月
-          </Typography>
-
-          <Grid item xs={3.3} sm={4} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            日
-          </Typography>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' className="pl-[35px] md:pl-[50px] lg:pl-[105px] pt-6">
-            10か月
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.5}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Typography component='div' className="pl-5 pt-6 md:pl-7 md:pr-0 lg:pl-0"></Typography>
-          <Grid item xs={3.3} sm={4} md={1.2}>
-            <TextField
-              className='w-full'
-              id="-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-
-          <Typography component='div' className="pl-2 pt-6 lg:pl-1 lg:pr-4 ">
-            年
-          </Typography>
-          <Typography component='div' className="pl-[85px] pt-6 md:pl-[100px] lg:pl-0 "></Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            月
-          </Typography>
-
-          <Grid item xs={3.3} sm={4} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            日
-          </Typography>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' className="md:pl-0 lg:pl-[50px] pt-6">
-            1歳6か月 平成
-          </Typography>
-          <Grid item xs={3} sm={3} md={1.5}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Typography component='div' className="pl-4 pt-6 md:pl-7 md:pr-0 lg:pl-0"></Typography>
-          <Grid item xs={3.3} sm={4} md={1.2}>
-            <TextField
-              className='w-full'
-              id="-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-
-          <Typography component='div' className="pl-2 pt-6 lg:pl-1 lg:pr-4 ">
-            年
-          </Typography>
-          <Typography component='div' className="pl-[85px] pt-6 md:pl-[100px] lg:pl-0 "></Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            月
-          </Typography>
-
-          <Grid item xs={3.3} sm={4} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            日
-          </Typography>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' className="pl-[60px] md:pl-[75px] lg:pl-[127px] pt-6">
-            3歲
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.5}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Typography component='div' className="pl-5 pt-6 md:pl-7 md:pr-0 lg:pl-0"></Typography>
-          <Grid item xs={3.3} sm={4} md={1.2}>
-            <TextField
-              className='w-full'
-              id="-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-
-          <Typography component='div' className="pl-2 pt-6 lg:pl-1 lg:pr-4 ">
-            年
-          </Typography>
-          <Typography component='div' className="pl-[85px] pt-6 md:pl-[100px] lg:pl-0 "></Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            月
-          </Typography>
-
-          <Grid item xs={3.3} sm={4} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            日
-          </Typography>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 md:pr-3 lg:pr-0 lg:pl-[85px] pt-6">
-            特記事項
-          </Typography>
-          <Grid item xs={6} sm={5} md={2}>
-            <TextField
-              className='w-full'
-              id="Notices-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Card */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-10 pl-20' >
-          <Card sx={{ bgcolor: "pink", width: 120, height: 40 }}>
-            <Typography component='div' className="pt-2">
-              既往症
-            </Typography>
-          </Card>
-        </Grid>
-        {/* End Card */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-8 md:pr-3 md:pl-[52px] lg:pr-0 lg:pl-[100px] pt-6">
-            川崎病
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-
-          <Typography component='div' fontWeight={500} sx={{ marginLeft: { xs: 0, sm: -1 }, fontSize: { xs: "13px", sm: "15px" } }} className="pl-0 md:pr-3 md:pl-[0px] lg:pr-0 lg:pl-[50px] pt-6">
-            先天性股関節脱臼
-          </Typography>
-          <Grid item xs={3} sm={3} md={1.1} sx={{ marginLeft: { xs: -1, sm: -1.5, md: 0 } }}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-[2px] md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-8 md:pr-3 md:pl-[52px] lg:pr-0 lg:pl-[100px] pt-6">
-            心臓病
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-
-          <Typography component='div' fontWeight={500} sx={{ marginLeft: { xs: 0, sm: -1 }, fontSize: { xs: "13px", sm: "15px" } }} className="pl-[36px] md:pr-3 md:pl-[60px] lg:pr-0 lg:pl-[110px] pt-6">
-            ヘルニア
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.1} sx={{ marginLeft: { xs: -1, sm: -1.5, md: 0 } }}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-[2px] md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-8 md:pr-3 md:pl-[52px] lg:pr-0 lg:pl-[100px] pt-6">
-            腎藏病
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-
-          <Typography component='div' fontWeight={500} sx={{ marginLeft: { xs: 0, sm: -1 }, fontSize: { xs: "13px", sm: "15px" } }} className="pl-[62px] md:pr-3 md:pl-[90px] lg:pr-0 lg:pl-[140px] pt-6">
-            肺炎
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.1} sx={{ marginLeft: { xs: -1, sm: -1.5, md: 0 } }}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-[2px] md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-8 md:pr-3 md:pl-[52px] lg:pr-0 lg:pl-[100px] pt-6">
-            肝臓病
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-
-          <Typography component='div' fontWeight={500} sx={{ marginLeft: { xs: 0, sm: -1 }, fontSize: { xs: "13px", sm: "15px" } }} className="pl-[36px] md:pr-3 md:pl-[60px] lg:pr-0 lg:pl-[110px] pt-6">
-            自家中毒
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.1} sx={{ marginLeft: { xs: -1, sm: -1.5, md: 0 } }}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-[2px] md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 md:pl-0 md:pr-0 lg:pr-0 lg:pl-[20px] pt-6">
-            大きな外傷や手術
-          </Typography>
-          <Grid item xs={5.4} sm={6.3} md={2}>
-            <TextField
-              className='w-full'
-              id="Notices-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Grid item xs={3.5} sm={2.7} md={1.1} sx={{ marginLeft: { xs: 10, sm: 16, md: 0 } }}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-[2px] md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={2.8} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-5 md:pl-0 md:pr-0 lg:pr-0 lg:pl-[20px] pt-6">
-            その他の重い病気
-          </Typography>
-          <Grid item xs={5.4} sm={6.3} md={2}>
-            <TextField
-              className='w-full'
-              id="Notices-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-            />
-          </Grid>
-          <Grid item xs={3.5} sm={2.7} md={1.1} sx={{ marginLeft: { xs: 10, sm: 16, md: 0 } }}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-[2px] md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={2.8} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-8 md:pr-0 md:pl-[52px] lg:pr-0 lg:pl-[100px] pt-6">
-            麻しん
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-
-          <Typography component='div' fontWeight={500} sx={{ marginLeft: { xs: 0, sm: -1 } }} className="pl-[40px] md:pr-3 md:pl-[60px] lg:pr-0 lg:pl-[105px] pt-6">
-            麻しん
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.1} sx={{ marginLeft: { xs: -1, sm: -1.5, md: 0 } }}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-[2px] md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' fontWeight={500} className="pl-[47px] md:pr-3 md:pl-[55px] lg:pr-0 lg:pl-[115px] pt-6">
-            水痘
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-
-          <Typography component='div' fontWeight={500} sx={{ marginLeft: { xs: 0, sm: -1 } }} className="pl-[38px] md:pr-3 md:pl-[60px] lg:pr-0 lg:pl-[105px] pt-6">
-            百日咳
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.1} sx={{ marginLeft: { xs: -1, sm: -1.5, md: 0 } }}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-[2px] md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' sx={{ fontSize: { xs: "13px", sm: "15px", }, marginLeft: { xs: "-50px", sm: "-5px", md: 0 } }} fontWeight={500} className="pl-[47px] md:pr-0 md:pl-[0px] lg:pr-0 lg:pl-[40px] pt-6">
-            流行性耳下腺炎
-          </Typography>
-          <Grid item xs={3.5} sm={3} md={1.1} sx={{ marginLeft: { xs: "-11px", sm: "0" } }}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-            歲
-          </Typography>
-
-          <Grid item xs={3.5} sm={3} md={1.1}>
-            <FormControl size="small" fullWidth>
-              <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Typography component='div' className="pl-2 md:pl-1 pt-6">
-            か月
-          </Typography>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start 出生時の状況 Grid */}
-        <RadioGroup
-          defaultValue=""
-          aria-labelledby="demo-customized-radios"
-          name="customized-radios"
-        >
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-            <Typography component='div' fontWeight={500} className="pl-5 lg:pl-20 pt-6">
-              脱臼の経験
-            </Typography>
-            <Grid item xs={4.5} sm={6} md={1} sx={{ marginLeft: { xs: 5, sm: 1.5, md: 0 } }}>
-              <FormControlLabel value="有" control={<Radio />} label="有" />
-            </Grid>
-            <Grid item xs={3.5} sm={1} md={1} sx={{ marginLeft: { xs: -4, sm: -5, md: 0 } }}>
-              <FormControlLabel value="無" control={<Radio />} label="無" />
-            </Grid>
-            <Typography component='div' fontWeight={500} sx={{ marginLeft: { xs: 0, sm: 0, md: 5 } }} className="pl-5 pt-6">
-              けいれん(ひきつけ)
-            </Typography>
-            <Grid item xs={4.5} sm={3.5} md={1} sx={{ marginLeft: { xs: -2.2, sm: 0, md: 0 } }}>
-              <FormControlLabel value="有" control={<Radio />} label="有" />
-            </Grid>
-            <Grid item xs={3.5} sm={3.5} md={1} sx={{ marginLeft: { xs: -4, sm: -2.5, md: 0 } }}>
-              <FormControlLabel value="無" control={<Radio />} label="無" />
-            </Grid>
-          </Grid>
-        </RadioGroup>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-3 pl-3' >
-          <Typography component='div' className="pl-[30px] md:pl-[60px] lg:pl-[103px] pt-6">
-            有熱
-          </Typography>
-          <Grid item xs={8} sm={6} md={2}>
-            <TextField
-              className='w-full'
-              id="-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-              InputProps={{
-                endAdornment: <InputAdornment position="end">回</InputAdornment>,
-              }}
-            />
-          </Grid>
-
-          <Typography component='div' className="pl-[30px] md:pl-[60px] lg:pl-20 pt-6">
-            無熱
-          </Typography>
-          <Grid item xs={8} sm={6} md={2}>
-            <TextField
-              className='w-full'
-              id="-input"
-              label=""
-              type="text"
-              size='small'
-              sx={{
-                backgroundColor: "white",
-              }}
-              InputProps={{
-                endAdornment: <InputAdornment position="end">回</InputAdornment>,
-              }}
-            />
-          </Grid>
-          <Typography component='div' className="pl-[85px] pt-6 md:pl-[100px] lg:pl-0 "></Typography>
-
-        </Grid>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <RadioGroup
-          defaultValue=""
-          aria-labelledby="demo-customized-radios"
-          name="customized-radios"
-        >
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-            <Typography component='div' sx={{ fontSize: { xs: "13px", sm: "15px", }, marginLeft: { xs: "-50px", sm: "50px", md: "-30px" } }} fontWeight={500} className="pl-[100px] pr-10 md:pr-[100px] md:pl-[0px] lg:pr-0 lg:pl-[40px] pt-6">
-              初めてけいれんを起こした月齢
-            </Typography>
-            <Grid item xs={3.5} sm={3} md={1.1} sx={{ marginLeft: { xs: "30px", sm: "40px", md: 0 } }}>
-              <FormControl size="small" fullWidth>
-                <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  <MenuItem value={1}>1</MenuItem>
-                  <MenuItem value={2}>2</MenuItem>
-                  <MenuItem value={3}>3</MenuItem>
-                  <MenuItem value={4}>4</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Typography component='div' className="pl-1 md:pl-1 md:pr-2 pt-6">
-              歲
-            </Typography>
-
-            <Grid item xs={3.5} sm={3} md={1.1}>
-              <FormControl size="small" fullWidth>
-                <Select defaultValue="" id="grouped-select" sx={{ backgroundColor: "white" }}>
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  <MenuItem value={1}>1</MenuItem>
-                  <MenuItem value={2}>2</MenuItem>
-                  <MenuItem value={3}>3</MenuItem>
-                  <MenuItem value={4}>4</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Typography component='div' className="pl-2 md:pl-1 pt-6">
-              か月
-            </Typography>
-
-            <Typography component='div' fontWeight={500} className="pl-10 md:pl-12 lg:pl-20 pt-6">
-              喘息の診断
-            </Typography>
-
-            <Grid item xs={4.5} sm={3} md={1} sx={{ marginLeft: { xs: 0, sm: 0, md: 0 } }}>
-              <FormControlLabel value="有" control={<Radio />} label="有" />
-            </Grid>
-            <Grid item xs={3.5} sm={1} md={1} sx={{ marginLeft: { xs: -4, sm: 0, md: 0 } }}>
-              <FormControlLabel value="無" control={<Radio />} label="無" />
-            </Grid>
-          </Grid>
-        </RadioGroup>
-        {/* End Grid */}
-
-        {/* Start Grid */}
-        <RadioGroup
-          defaultValue=""
-          aria-labelledby="demo-customized-radios"
-          name="customized-radios"
-        >
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-4 pl-3' >
-            <Typography component='div' fontWeight={500} className="pl-0 md:pl-0 lg:pl-20 pt-6">
-              アレルギーの診断
-            </Typography>
-            <Grid item xs={4.5} sm={3} md={1} sx={{ marginLeft: { xs: -1, sm: 0, md: 0 } }}>
-              <FormControlLabel value="有" control={<Radio />} label="有" />
-            </Grid>
-            <Grid item xs={4.5} sm={1} md={1} sx={{ marginLeft: { xs: -5.8, sm: 0, md: 0 }, paddingRight: { xs: 0, sm: 20, md: 0 } }}>
-              <FormControlLabel value="無" control={<Radio />} label="無" />
-            </Grid>
-
-            <Typography component='div' className="pl-[35px] md:pl-[50px] lg:pl-[20px] pt-6">
-              有の場合
-            </Typography>
-
-            <Grid item xs={7} sm={5} md={2}>
-              <TextField
-                className='w-full'
-                id="input"
-                label=""
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-          </Grid>
-        </RadioGroup>
-        {/* End Grid */}
-
-        {/* Start Card */}
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 2 }} className='pt-10 pl-20 pb-5' >
-          <Card sx={{ bgcolor: "pink", width: 120, height: 40 }}>
-            <Typography component='div' className="pt-2">
-              現在の体質
-            </Typography>
-          </Card>
-        </Grid>
-        {/* End Card */}
-
-        {/* Start Box */}
-        <Box sx={{  width: { xs: 800, sm: 800, md: 1111 } }}>
-
-          {/* Start Grid */}
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 8 }} className='pt-3 pl-3' >
-            <Grid item xs={2.3} sm={2.5} md={2.1}>
-              <Typography component='div'>
-                かぜをひきやすい
+            >
+              <Box sx={{ display: 'flex', gap: 3, mb: 1, justifyContent: "flex-start" }}>   {/* ★ เพิ่ม */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box
+                    sx={{
+                      width: 24,
+                      height: 16,
+                      backgroundColor: '#b8cce4',
+                      border: '1px solid #7fa3cc',
+                    }}
+                  />
+                  <Typography fontSize="0.85rem" color="error" fontWeight={600}>
+                    標準的な接種年齢
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box
+                    sx={{
+                      width: 24,
+                      height: 16,
+                      backgroundColor: '#d9d9d9',
+                      border: '1px solid #b0b0b0',
+                    }}
+                  />
+                  <Typography fontSize="0.85rem" color="error" fontWeight={600}>
+                    接種が定められている年齢
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Typography fontSize="0.85rem" color="error" sx={{ mb: 0.5 }}>
+                ※麻しん・風しん(２期)の対象は年長児。
               </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3} sx={{ marginLeft: { xs: 1, sm: 0, md: 0 } }}>
-              <Typography component='div'>
-                入所時
+              <Typography fontSize="0.85rem" color="error">
+                ※麻しん・風しんは、１期・２期とも、接種年齢になったら、なるべく早く受けることが望ましい。
               </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <Typography component='div'>
-                2025年
-              </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <Typography component='div'>
-                2026年
-              </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <Typography component='div'>
-                2027年
-              </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <Typography component='div'>
-                2028年
-              </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <Typography component='div'>
-                2029年
-              </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <Typography component='div'>
-                2030年
-              </Typography>
-            </Grid>
-          </Grid>
-          {/* End Grid */}
+            </Box>
 
-          {/* Start Grid */}
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 8 }} className='pt-1 pl-3' >
-            <Grid item xs={2} sm={2.8} md={2.1}>
-              <Typography component='div' className="pt-2">
-                発熱しやすい
-              </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.4} sx={{ marginLeft: { xs: 5, sm: 0, md: 0 } }}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-          </Grid>
-          {/* End Grid */}
-
-          {/* Start Grid */}
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 8 }} className='pt-1 pl-3' >
-            <Grid item xs={2.2} sm={2.8} md={2.1}>
-              <Typography component='div' className="pt-2">
-                時々腹痛を訴える
-              </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.4} sx={{ marginLeft: { xs: 3.5, sm: 0, md: 0 } }}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-          </Grid>
-          {/* End Grid */}
-
-          {/* Start Grid */}
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 8 }} className='pt-1 pl-3' >
-            <Grid item xs={2.2} sm={2.8} md={2.1}>
-              <Typography component='div' className="pt-2">
-                ゼイゼイがある
-              </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.4} sx={{ marginLeft: { xs: 3.5, sm: 0, md: 0 } }}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-          </Grid>
-          {/* End Grid */}
-
-          {/* Start Grid */}
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 8 }} className='pt-1 pl-3' >
-            <Grid item xs={2.2} sm={2.8} md={2.1}>
-              <Typography component='div' className="pt-2">
-                湿疹がでやすい
-              </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.4} sx={{ marginLeft: { xs: 3.5, sm: 0, md: 0 } }}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-          </Grid>
-          {/* End Grid */}
-
-          {/* Start Grid */}
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 8 }} className='pt-1 pl-3' >
-            <Grid item xs={2.2} sm={2.8} md={2.1}>
-              <Typography component='div' className="pt-2">
-                鼻血がでやすい
-              </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.4} sx={{ marginLeft: { xs: 3.5, sm: 0, md: 0 } }}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-          </Grid>
-          {/* End Grid */}
-
-          {/* Start Grid */}
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 8 }} className='pt-1 pl-3' >
-            <Grid item xs={2.5} sm={2.8} md={2.3}>
-              <Typography component='div' className="pt-2">
-                中耳炎になりやすい
-              </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.4} sx={{ marginLeft: { xs: 1.1, sm: 0, md: -2.5 } }}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-            <Grid item xs={1.3} sm={1.3} md={1.3}>
-              <FormControlLabel control={<Checkbox />} label="" />
-            </Grid>
-          </Grid>
-          {/* End Grid */}
-
-          {/* Start Grid */}
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 8 }} className='pt-1 pl-3' >
-            <Grid item xs={2} sm={2.8} md={2.3}>
-              <Typography component='div' className="pt-2">
-                平熱
-              </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 3, sm: -2, md: -5 } }}>
-              <TextField
-                className='w-full'
-                id="temperature1"
-                name="temperature1"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">°c</InputAdornment>,
-                }}
-                onClick={() => handleInputClick('temperature1')}
-                InputLabelProps={{ shrink: true }} 
-              />
-            <Numpad open={numpadOpen && currentInputId === 'temperature1'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 0, sm: -2, md: -2 } }}>
-              <TextField
-                className='w-full'
-                id="temperature2"
-                name="temperature2"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">°c</InputAdornment>,
-                }}
-                onClick={() => handleInputClick('temperature2')}
-                InputLabelProps={{ shrink: true }} 
-              />
-            <Numpad open={numpadOpen && currentInputId === 'temperature2'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 0, sm: -2, md: -2 } }}>
-              <TextField
-                className='w-full'
-                id="temperature3"
-                name="temperature3"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">°c</InputAdornment>,
-                }}
-                onClick={() => handleInputClick('temperature3')}
-                InputLabelProps={{ shrink: true }} 
-              />
-            <Numpad open={numpadOpen && currentInputId === 'temperature3'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 0, sm: -2, md: -2 } }}>
-              <TextField
-                className='w-full'
-                id="temperature4"
-                name="temperature4"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">°c</InputAdornment>,
-                }}
-                onClick={() => handleInputClick('temperature4')}
-                InputLabelProps={{ shrink: true }} 
-              />
-            <Numpad open={numpadOpen && currentInputId === 'temperature4'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 0, sm: -2, md: -2 } }}>
-              <TextField
-                className='w-full'
-                id="temperature5"
-                name="temperature5"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">°c</InputAdornment>,
-                }}
-                onClick={() => handleInputClick('temperature5')}
-                InputLabelProps={{ shrink: true }} 
-              />
-            <Numpad open={numpadOpen && currentInputId === 'temperature5'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 0, sm: -2, md: -2 } }}>
-              <TextField
-                className='w-full'
-                id="temperature6"
-                name="temperature6"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">°c</InputAdornment>,
-                }}
-                onClick={() => handleInputClick('temperature6')}
-                InputLabelProps={{ shrink: true }} 
-              />
-            <Numpad open={numpadOpen && currentInputId === 'temperature6'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 0, sm: -2, md: -2 } }} className="pb-5">
-              <TextField
-                className='w-full'
-                id="temperature7"
-                name="temperature7"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">°c</InputAdornment>,
-                }}
-                onClick={() => handleInputClick('temperature7')}
-                InputLabelProps={{ shrink: true }} 
-              />
-            <Numpad open={numpadOpen && currentInputId === 'temperature7'} onClose={() => setNumpadOpen(false)} onInput={handleNumpadInput} />
-            </Grid>
-          </Grid>
-          {/* End Grid */}
-
-          {/* Start Grid */}
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 2, sm: 2, md: 8 }} className='pl-3' >
-            <Grid item xs={2} sm={2.8} md={2.3}>
-              <Typography component='div' sx={{ fontSize: { xs: "12px", sm: "13px", md: "14px" } }} className="pt-2">
-                保育園で気をつけてほしいことその他特記事項
-              </Typography>
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 3, sm: -2, md: -5 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 0, sm: -2, md: -2 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 0, sm: -2, md: -2 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 0, sm: -2, md: -2 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 0, sm: -2, md: -2 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 0, sm: -2, md: -2 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.3} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 0, sm: -2, md: -2 } }} className="pb-5">
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-          </Grid>
-          {/* End Grid */}
-
-          {/* Start Grid */}
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 4, sm: 2, md: 8 }} className='pt-5 pl-3' >
-            <Grid item xs={1.5} sm={1.5} md={1.3} sx={{ marginLeft: { xs: 5, sm: 7, md: 11 } }}>
-              <Typography component='div'>
-                (0歲児)
-              </Typography>
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.3} sx={{ marginLeft: { xs: 0.5, sm: 0, md: 2 } }}>
-              <Typography component='div'>
-                (0歲児)
-              </Typography>
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.3} sx={{ marginLeft: { xs: 0.5, sm: 0, md: 2 } }}>
-              <Typography component='div'>
-                (1歲児)
-              </Typography>
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.3} sx={{ marginLeft: { xs: 0.5, sm: 0, md: 2 } }}>
-              <Typography component='div'>
-                (2歲児)
-              </Typography>
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.3} sx={{ marginLeft: { xs: 0.5, sm: 0, md: 2 } }}>
-              <Typography component='div'>
-                (3歲児)
-              </Typography>
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.3} sx={{ marginLeft: { xs: 0.5, sm: 0, md: 2 } }}>
-              <Typography component='div'>
-                (4歲児)
-              </Typography>
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.3} sx={{ marginLeft: { xs: 0.5, sm: 0, md: 2 } }}>
-              <Typography component='div'>
-                (5歲児)
-              </Typography>
-            </Grid>
-          </Grid>
-          {/* End Grid */}
-
-          {/* Start Grid */}
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 1, md: 1 }} className='pt-5 pl-3' >
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 5, sm: 5, md: 5 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">年度</InputAdornment>,
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">年度</InputAdornment>,
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">年度</InputAdornment>,
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">年度</InputAdornment>,
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">年度</InputAdornment>,
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">年度</InputAdornment>,
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }} className="pb-5">
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">年度</InputAdornment>,
-                }}
-              />
-            </Grid>
-          </Grid>
-          {/* End Grid */}
-
-          {/* Start Grid */}
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 1, md: 1 }} className='pl-3' >
-            <Grid item xs={2} sm={2.8} md={2} sx={{ marginLeft: { xs: -6.5, sm: -9.5, md: -9 } }}>
-              <Typography component='div' className="pt-2">
-                主任
-              </Typography>
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: -5, sm: -8.5, md: -9 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }} className="pb-5">
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-
-              />
-            </Grid>
-          </Grid>
-          {/* End Grid */}
-
-          {/* Start Grid */}
-          <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 1, md: 1 }} className='pl-3' >
-            <Grid item xs={2} sm={2.8} md={2} sx={{ marginLeft: { xs: -6.5, sm: -9.5, md: -9 } }}>
-              <Typography component='div' className="pt-2">
-                担任
-              </Typography>
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: -5, sm: -8.5, md: -9 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }}>
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-              />
-            </Grid>
-            <Grid item xs={1.5} sm={1.5} md={1.5} sx={{ marginLeft: { xs: 1, sm: 0.5, md: 1 } }} className="pb-5">
-              <TextField
-                className='w-full'
-                id="input"
-                type="text"
-                size='small'
-                sx={{
-                  backgroundColor: "white",
-                }}
-
-              />
-            </Grid>
-          </Grid>
-        </Box>
-        <HealthCheckForm/>
-
-        <div className="mt-auto">
-        <Grid container justifyContent="center" spacing={2} className='pt-5' sx={{ bottom: 0, width: '100%', backgroundColor: 'inherit', paddingBottom: '10px' }}>
-          <Grid item>
-            <Button variant="contained" href="/student" size='medium' className='text-center' startIcon={<ArrowBackIcon />}  color="warning">
-              <Typography component="div" style={{ color: 'white', alignItems: 'center' }}>
-                戻る
-              </Typography>
-            </Button>
-          </Grid>
-          <Grid item>
-            <Button variant="contained" href="#" size='medium' className='text-center' startIcon={<SaveIcon />} color="success">
-              <Typography component="div" style={{ color: 'white', alignItems: 'center' }}>
-                修正
-              </Typography>
-            </Button>
           </Grid>
         </Grid>
-      </div>
+             
       </ContentMain>
     </>
   );
-};
+}
