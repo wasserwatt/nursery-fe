@@ -1,44 +1,23 @@
-import { Button, Card, Checkbox, FormControl, Box, FormControlLabel, Grid, MenuItem, Select, TextField, Typography, FormGroup } from "@mui/material";
+import { Button, Checkbox, FormControl, Box, FormControlLabel, Grid, MenuItem, Select, TextField, Typography, TableContainer, Table, TableBody, TableRow, TableCell,  InputLabel, TableHead } from "@mui/material";
 import ContentMain from "../../content/Content";
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import HealthCheckForm from "./HealthCheckForm";
 import Loading from '../../Loading';
 import { useEffect, useState } from 'react';
-import Numpad from "../../content/Numpad";
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-
+import { ArrowBack, Save } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 interface FamilyMember {
   id: number;
 }
 
 export default function StudentHistory() {
-
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
-  const [numpadOpen, setNumpadOpen] = useState(false);
-  const [currentInputId, setCurrentInputId] = useState('');
   const [familyMemberCounter, setFamilyMemberCounter] = useState(1);
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([{ id: 1 }]);
   const [birthCondition, setBirthCondition] = useState('normal'); // 'normal' or 'abnormal'
   const [birthDetails, setBirthDetails] = useState<string[]>([]);
   const [birthOther, setBirthOther] = useState('');
-
-  const handleInputClick = (id: string) => {
-    setCurrentInputId(id);
-    setNumpadOpen(true);
-  };
-
-  const handleNumpadInput = (value: string) => {
-    const input = document.getElementById(currentInputId) as HTMLInputElement;
-    if (input) {
-      input.value = value;
-    }
-    setNumpadOpen(false);
-  };
 
   const addFamilyMember = () => {
     const newId = familyMemberCounter + 1;
@@ -62,17 +41,6 @@ export default function StudentHistory() {
     }, 1000);
   }, []);
 
-  const TOTAL_UNITS = 42; 
-  const calculatePosition = (month: number): number => {
-    if (month <= 24) {
-      return (month / TOTAL_UNITS) * 100;
-    } else {
-      return (
-        (24 / TOTAL_UNITS) * 100 +
-        ((month - 24) * 0.3 / TOTAL_UNITS) * 100
-      );
-    }
-  };
 
   if (loading) {
     return <Loading />;
@@ -109,11 +77,21 @@ export default function StudentHistory() {
                   </Typography>
                 </Box>
               </Box>
-              <TextField
-                label="施設長"
-                size='small'
-                sx={{ backgroundColor: "white", width: 200 }}
-              />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography>健康管理台帳（</Typography>
+                <FormControlLabel 
+                  control={<Checkbox />} 
+                  label="有" 
+                  sx={{ m: 0 }}
+                />
+                <Typography>）・ 健康個人カード（</Typography>
+                <FormControlLabel 
+                  control={<Checkbox />} 
+                  label="有" 
+                  sx={{ m: 0 }}
+                />
+                <Typography>）</Typography>
+              </Box>
             </Box>
           </Grid>
         </Grid>
@@ -123,21 +101,26 @@ export default function StudentHistory() {
           <Grid item xs={12}>
             <Box sx={{ border: '2px solid #000', p: 1, mb: 2, backgroundColor: '#f5f5f5' }}>
               <Grid container spacing={1} alignItems="center">
-                <Grid item xs={12} sm={3}>
-                  <Typography fontWeight={600}>健康管理台帳(　者　)</Typography>
-                </Grid>
-                <Grid item xs={12} sm={2}>
-                  <Typography fontWeight={600}>健康個人入力</Typography>
-                </Grid>
                 <Grid item xs={12} sm={7}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                     <Typography>年度:</Typography>
-                    <TextField label="0歳児" size='small' sx={{ width: 80, backgroundColor: "white" }} />
-                    <TextField label="1歳児" size='small' sx={{ width: 80, backgroundColor: "white" }} />
-                    <TextField label="2歳児" size='small' sx={{ width: 80, backgroundColor: "white" }} />
-                    <TextField label="3歳児" size='small' sx={{ width: 80, backgroundColor: "white" }} />
-                    <TextField label="4歳児" size='small' sx={{ width: 80, backgroundColor: "white" }} />
-                    <TextField label="5歳児" size='small' sx={{ width: 80, backgroundColor: "white" }} />
+                    <TextField 
+                      label="年度" 
+                      size='small' 
+                      placeholder="2024"
+                      sx={{ width: 100, backgroundColor: "white" }} 
+                    />
+                    <FormControl size='small' sx={{ width: 120, backgroundColor: "white" }}>
+                      <InputLabel>年齢</InputLabel>
+                      <Select label="年齢" defaultValue="">
+                        <MenuItem value="0">0歳児</MenuItem>
+                        <MenuItem value="1">1歳児</MenuItem>
+                        <MenuItem value="2">2歳児</MenuItem>
+                        <MenuItem value="3">3歳児</MenuItem>
+                        <MenuItem value="4">4歳児</MenuItem>
+                        <MenuItem value="5">5歳児</MenuItem>
+                      </Select>
+                    </FormControl>
                   </Box>
                 </Grid>
               </Grid>
@@ -148,489 +131,459 @@ export default function StudentHistory() {
         {/* Basic Information Table */}
         <Grid container spacing={2} className='pt-3 pl-3'>
           <Grid item xs={12}>
-            <Box sx={{ border: '2px solid #000' }}>
-              {/* Furigana and Name Row */}
-              <Grid container sx={{ borderBottom: '1px solid #000' }}>
-                <Grid item xs={12} sm={2} sx={{ borderRight: '1px solid #000', backgroundColor: '#f5f5f5', p: 1 }}>
-                  <Typography align="center">ふりがな</Typography>
-                  <Typography align="center" sx={{ mt: 2 }}>氏名</Typography>
-                </Grid>
-                <Grid item xs={12} sm={4} sx={{ borderRight: '1px solid #000' }}>
-                  <Box sx={{ p: 1 }}>
-                    <TextField
-                      fullWidth
-                      placeholder="やまだ　たろう"
-                      size='small'
-                      sx={{ backgroundColor: "white", mb: 1 }}
-                    />
-                    <TextField
-                      fullWidth
-                      placeholder="山田　太郎"
-                      size='small'
-                      sx={{ backgroundColor: "white" }}
-                    />
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={1} sx={{ borderRight: '1px solid #000', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Typography>男・女</Typography>
-                </Grid>
-                <Grid item xs={12} sm={2} sx={{ borderRight: '1px solid #000', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Typography>生年月日</Typography>
-                </Grid>
-                <Grid item xs={12} sm={3}>
-                  <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <FormControl size="small" sx={{ minWidth: 70 }}>
-                      <Select defaultValue="平成" sx={{ backgroundColor: "white" }}>
-                        <MenuItem value="平成">平成</MenuItem>
-                        <MenuItem value="令和">令和</MenuItem>
-                      </Select>
-                    </FormControl>
-                    <TextField size='small' placeholder="年" sx={{ width: 50, backgroundColor: "white" }} />
-                    <Typography>年</Typography>
-                    <TextField size='small' placeholder="月" sx={{ width: 50, backgroundColor: "white" }} />
-                    <Typography>月</Typography>
-                    <TextField size='small' placeholder="日" sx={{ width: 50, backgroundColor: "white" }} />
-                    <Typography>日</Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-
-              {/* Gender Radio and Admission/Withdrawal Dates */}
-              <Grid container sx={{ borderBottom: '1px solid #000' }}>
-                <Grid item xs={12} sm={6} sx={{ borderRight: '1px solid #000', p: 1 }}>
-                  <RadioGroup row sx={{ justifyContent: 'center' }}>
-                    <FormControlLabel value="male" control={<Radio />} label="" />
-                  </RadioGroup>
-                </Grid>
-                <Grid item xs={12} sm={1} sx={{ borderRight: '1px solid #000', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Typography>入所</Typography>
-                </Grid>
-                <Grid item xs={12} sm={2} sx={{ borderRight: '1px solid #000' }}>
-                  <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-                    <Typography fontSize="0.9rem">令和</Typography>
-                    <TextField size='small' placeholder="年" sx={{ width: 40, backgroundColor: "white" }} />
-                    <Typography fontSize="0.9rem">年</Typography>
-                    <TextField size='small' placeholder="月" sx={{ width: 40, backgroundColor: "white" }} />
-                    <Typography fontSize="0.9rem">月</Typography>
-                    <TextField size='small' placeholder="日" sx={{ width: 40, backgroundColor: "white" }} />
-                    <Typography fontSize="0.9rem">日</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={1} sx={{ borderRight: '1px solid #000', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Typography>退所</Typography>
-                </Grid>
-                <Grid item xs={12} sm={2}>
-                  <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-                    <Typography fontSize="0.9rem">令和</Typography>
-                    <TextField size='small' placeholder="年" sx={{ width: 40, backgroundColor: "white" }} />
-                    <Typography fontSize="0.9rem">年</Typography>
-                    <TextField size='small' placeholder="月" sx={{ width: 40, backgroundColor: "white" }} />
-                    <Typography fontSize="0.9rem">月</Typography>
-                    <TextField size='small' placeholder="日" sx={{ width: 40, backgroundColor: "white" }} />
-                    <Typography fontSize="0.9rem">日</Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-
-              {/* Address Section - 現住所 (3 rows) */}
-              {[1, 2, 3].map((row) => (
-                <Grid container key={row} sx={{ borderBottom: row === 3 ? 'none' : '1px solid #000' }}>
-                  {row === 1 && (
-                    <Grid item xs={12} sm={1} sx={{ borderRight: '1px solid #000', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', gridRow: 'span 3' }}>
-                      <Typography sx={{ writingMode: 'vertical-rl' }}>現住所</Typography>
-                    </Grid>
-                  )}
-                  {row > 1 && (
-                    <Grid item xs={12} sm={1} sx={{ borderRight: '1px solid #000' }}></Grid>
-                  )}
-                  <Grid item xs={12} sm={6} sx={{ borderRight: '1px solid #000' }}>
-                    <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography>〒</Typography>
-                      {row === 1 ? (
-                        <>
-                          <TextField size='small' placeholder="000-0000" sx={{ width: 120, backgroundColor: "white" }} />
-                          <Typography>福岡市</Typography>
-                          <TextField size='small' placeholder="区" sx={{ width: 100, backgroundColor: "white" }} />
-                          <Typography>区</Typography>
-                        </>
-                      ) : (
-                        <>
-                          <Typography sx={{ ml: 4 }}>福岡市</Typography>
-                          <TextField size='small' placeholder="区" sx={{ width: 100, backgroundColor: "white" }} />
-                          <Typography>区</Typography>
-                        </>
-                      )}
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={3} sx={{ borderRight: '1px solid #000' }}>
-                    <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography>TEL</Typography>
+            <TableContainer sx={{ border: '1px solid #000' }}>
+              <Table sx={{ '& td, & th': { border: '1px solid #000', padding: '8px' } }}>
+                <TableBody>
+                  {/* Row 1: Furigana */}
+                  <TableRow>
+                    <TableCell 
+                      sx={{ 
+                        backgroundColor: '#f5f5f5', 
+                        width: '100px', 
+                        textAlign: 'center',
+                        verticalAlign: 'middle'
+                      }}
+                    >
+                      <Typography>ふりがな</Typography>
+                    </TableCell>
+                    <TableCell sx={{ width: '35%' }}>
                       <TextField
+                        fullWidth
+                        placeholder="やまだ　たろう"
                         size='small'
-                        placeholder="000-0000-0000"
-                        sx={{ flex: 1, backgroundColor: "white" }}
-                        onClick={() => handleInputClick(`address-tel-${row}`)}
-                        InputProps={{ readOnly: true }}
+                        sx={{ backgroundColor: "white" }}
                       />
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={2}>
-                    <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography>校区</Typography>
-                      <TextField size='small' sx={{ flex: 1, backgroundColor: "white" }} />
-                    </Box>
-                  </Grid>
-                </Grid>
-              ))}
-            </Box>
+                    </TableCell>
+                    <TableCell 
+                      rowSpan={2}
+                      sx={{ 
+                        backgroundColor: '#f5f5f5', 
+                        width: '80px', 
+                        textAlign: 'center',
+                        verticalAlign: 'middle'
+                      }}
+                    >
+                      <RadioGroup row sx={{ justifyContent: 'center', gap: 1 }}>
+                        <FormControlLabel 
+                          value="male" 
+                          control={<Radio />} 
+                          label="男" 
+                          sx={{ margin: 0 }}
+                        />
+                        <FormControlLabel 
+                          value="female" 
+                          control={<Radio />} 
+                          label="女" 
+                          sx={{ margin: 0 }}
+                        />
+                      </RadioGroup>
+                    </TableCell>
+                    <TableCell 
+                      sx={{ 
+                        backgroundColor: '#f5f5f5', 
+                        width: '25%',
+                        textAlign: 'center',
+                        verticalAlign: 'middle'
+                      }}
+                    >
+                      <Typography>生年月日</Typography>
+                    </TableCell>
+                    <TableCell 
+                      sx={{ 
+                        backgroundColor: '#f5f5f5', 
+                        width: '80px', 
+                        textAlign: 'center',
+                        verticalAlign: 'middle'
+                      }}
+                    >
+                      <Typography sx={{ writingMode: 'vertical-rl', textOrientation: 'upright', margin: 'auto' }}>
+                        入所
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ width: '18%' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                        <Typography fontSize="0.9rem">令和</Typography>
+                        <TextField size='small' placeholder="年" sx={{ width: 40, backgroundColor: "white" }} />
+                        <Typography fontSize="0.9rem">年</Typography>
+                        <TextField size='small' placeholder="月" sx={{ width: 40, backgroundColor: "white" }} />
+                        <Typography fontSize="0.9rem">月</Typography>
+                        <TextField size='small' placeholder="日" sx={{ width: 40, backgroundColor: "white" }} />
+                        <Typography fontSize="0.9rem">日</Typography>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 2: Name */}
+                  <TableRow>
+                    <TableCell 
+                      sx={{ 
+                        backgroundColor: '#f5f5f5', 
+                        textAlign: 'center',
+                        verticalAlign: 'middle'
+                      }}
+                    >
+                      <Typography>氏名</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        fullWidth
+                        placeholder="山田　太郎"
+                        size='small'
+                        sx={{ backgroundColor: "white" }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                        <RadioGroup row>
+                          <FormControlLabel 
+                            value="heisei" 
+                            control={<Radio size="small" />} 
+                            label="平成" 
+                            sx={{ mr: 0.5, '& .MuiFormControlLabel-label': { fontSize: '0.9rem' } }} 
+                          />
+                          <FormControlLabel 
+                            value="reiwa" 
+                            control={<Radio size="small" />} 
+                            label="令和" 
+                            sx={{ ml: 0.5, '& .MuiFormControlLabel-label': { fontSize: '0.9rem' } }} 
+                          />
+                        </RadioGroup>
+                        <TextField size='small' placeholder="年" sx={{ width: 50, backgroundColor: "white" }} />
+                        <Typography fontSize="0.9rem">年</Typography>
+                        <TextField size='small' placeholder="月" sx={{ width: 50, backgroundColor: "white" }} />
+                        <Typography fontSize="0.9rem">月</Typography>
+                        <TextField size='small' placeholder="日" sx={{ width: 50, backgroundColor: "white" }} />
+                        <Typography fontSize="0.9rem">日</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell 
+                      sx={{ 
+                        backgroundColor: '#f5f5f5', 
+                        textAlign: 'center',
+                        verticalAlign: 'middle'
+                      }}
+                    >
+                      <Typography sx={{ writingMode: 'vertical-rl', textOrientation: 'upright', margin: 'auto' }}>
+                        退所
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                        <Typography fontSize="0.9rem">令和</Typography>
+                        <TextField size='small' placeholder="年" sx={{ width: 40, backgroundColor: "white" }} />
+                        <Typography fontSize="0.9rem">年</Typography>
+                        <TextField size='small' placeholder="月" sx={{ width: 40, backgroundColor: "white" }} />
+                        <Typography fontSize="0.9rem">月</Typography>
+                        <TextField size='small' placeholder="日" sx={{ width: 40, backgroundColor: "white" }} />
+                        <Typography fontSize="0.9rem">日</Typography>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+
+
+                  {/* Address Rows */}
+                  {[1, 2, 3].map((row) => (
+                    <TableRow key={row}>
+                      {row === 1 && (
+                        <TableCell 
+                          rowSpan={3} 
+                          sx={{ 
+                            backgroundColor: '#f5f5f5', 
+                            textAlign: 'center',
+                            verticalAlign: 'middle',
+                            width: '100px'
+                          }}
+                        >
+                          <Typography sx={{ writingMode: 'vertical-rl', textOrientation: 'upright', margin: 'auto' }}>
+                            現住所
+                          </Typography>
+                        </TableCell>
+                      )}
+                      <TableCell colSpan={2}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography>〒</Typography>
+                          <TextField size='small' placeholder="000-0000" sx={{ width: 100, backgroundColor: "white" }} />
+                          <Typography>福岡市</Typography>
+                          <TextField size='small' placeholder="区" sx={{ flex: 1, backgroundColor: "white" }} />
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography>TEL</Typography>
+                          <Typography>(</Typography>
+                          <TextField
+                            size='small'
+                            placeholder=""
+                            sx={{  flex: 1, backgroundColor: "white" }}
+                          />
+                          <Typography>)</Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell colSpan={2}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography>校区</Typography>
+                          <TextField size='small' sx={{ flex: 1, backgroundColor: "white" }} />
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </Grid>
         </Grid>
 
-        <Numpad 
-          open={numpadOpen && (currentInputId.includes('address-tel') || currentInputId.includes('family-tel') || currentInputId.includes('family-mobile'))} 
-          onClose={() => setNumpadOpen(false)} 
-          onInput={handleNumpadInput} 
-        />
-
-{/* Family Table - 家族の状況 */}
-<Grid container spacing={2} className='pt-5 pl-3'>
-  <Grid item xs={12}>
-    <Box sx={{  display: 'flex' }}>
-      {/* Vertical Label - 家族の状況 */}
-      <Box sx={{ 
-        width: '50px',
-        display: 'flex',
-        border: '1px solid #000',
-        alignItems: 'center',
-        justifyContent: 'center',
-        writingMode: 'vertical-rl',
-        textOrientation: 'upright',
-        p: 2
-      }}>
-        <Typography sx={{ 
-          fontSize: '18px',
-          letterSpacing: '12px',
-          lineHeight: 1
-        }}>
-          家族の状況
-        </Typography>
-      </Box>
-
-      {/* Table Content */}
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
-        <table style={{ 
-          width: '100%', 
-          backgroundColor: 'white'
-        }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f5f5f5' }}>
-              <th style={{ 
-                width: '15%', 
-                border: '1px solid #000', 
-                padding: '8px',
-                fontWeight: 600,
-                textAlign: 'center'
-              }}>
-                氏名
-              </th>
-              <th style={{ 
-                width: '12%', 
-                border: '1px solid #000', 
-                padding: '8px',
-                fontWeight: 600,
-                textAlign: 'center'
-              }}>
-                生年月日
-              </th>
-              <th style={{ 
-                width: '8%', 
-                border: '1px solid #000', 
-                padding: '8px',
-                fontWeight: 600,
-                textAlign: 'center'
-              }}>
-                続柄
-              </th>
-              <th style={{ 
-                width: '18%', 
-                border: '1px solid #000', 
-                padding: '8px',
-                fontWeight: 600,
-                textAlign: 'center'
-              }}>
-                勤務先
-              </th>
-              <th style={{ 
-                width: '20%', 
-                border: '1px solid #000', 
-                padding: '8px',
-                fontWeight: 600,
-                textAlign: 'center'
-              }}>
-                勤務先住所
-              </th>
-              <th style={{ 
-                width: '20%', 
-                border: '1px solid #000', 
-                padding: '8px',
-                fontWeight: 600,
-                textAlign: 'center'
-              }}>
-                TEL
-              </th>
-              <th style={{ 
-                width: '7%', 
-                border: '1px solid #000', 
-                padding: '8px',
-                fontWeight: 600,
-                textAlign: 'center'
-              }}>
-                操作
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {familyMembers.map((member, index) => (
-              <>
-                {/* Upper Row - Main Info */}
-                <tr key={`${member.id}-main`}>
-                  {/* 氏名 */}
-                  <td 
-                    rowSpan={2}
-                    style={{ 
-                      border: '1px solid #000', 
-                      padding: '8px',
-                      verticalAlign: 'top',
-                  
-                    }}
-                  >
-                    {index === 0 && (
-                      <Typography fontSize="0.85rem" fontWeight={500} sx={{ mb: 0.5 }}>
-                        保護者
-                      </Typography>
-                    )}
-                    <TextField 
-                      fullWidth 
-                      size='small' 
-                      sx={{ 
-                        backgroundColor: "white",
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': { border: '1px solid #ccc' }
-                        }
-                      }} 
+        {/* Family Table - 家族の状況 */}
+        <Grid container spacing={2} className='pt-5 pl-3'>
+          <Grid item xs={12}>
+            <TableContainer
+              component={Box}
+              sx={{
+                border: '1px solid #000',
+                overflow: 'auto',
+              }}
+            >
+              <Table
+                sx={{
+                  minWidth: 650,
+                  '& .MuiTableCell-root': {
+                    border: '1px solid #000',
+                    borderCollapse: 'collapse',
+                  },
+                }}
+                size="small"
+              >
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                    {/* 家族の状況 用の空ヘッダー列 */}
+                    <TableCell
+                      sx={{
+                        width: '50px',
+                        p: 0,
+                      }}
                     />
-                  </td>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        width: '15%',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                      }}
+                    >
+                      氏名
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        width: '12%',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                      }}
+                    >
+                      生年月日
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        width: '7%',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                      }}
+                    >
+                      続柄
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        width: '18%',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                      }}
+                    >
+                      勤務先
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        width: '20%',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                      }}
+                    >
+                      勤務先住所
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        width: '20%',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                      }}
+                    >
+                      TEL
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        width: '7%',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                      }}
+                    >
+                      操作
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
 
-                  {/* 生年月日 */}
-                  <td 
-                    rowSpan={2}
-                    style={{ 
-                      border: '1px solid #000', 
-                      padding: '8px',
-                      verticalAlign: 'top',
-                  
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Typography fontSize="0.75rem">S・H</Typography>
-                        <TextField 
-                          size='small' 
-                          placeholder="年" 
-                          sx={{ 
-                            width: 70, 
-                            backgroundColor: "white",
-                            '& .MuiOutlinedInput-root': {
-                              '& fieldset': { border: '1px solid #ccc' }
-                            }
-                          }} 
-                        />
-                        <Typography fontSize="0.75rem">年</Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <TextField 
-                          size='small' 
-                          placeholder="月" 
-                          sx={{ 
-                            width: 60, 
-                            backgroundColor: "white",
-                            '& .MuiOutlinedInput-root': {
-                              '& fieldset': { border: '1px solid #ccc' }
-                            }
-                          }} 
-                        />
-                        <Typography fontSize="0.75rem">月</Typography>
-                        <TextField 
-                          size='small' 
-                          placeholder="日" 
-                          sx={{ 
-                            width: 60, 
-                            backgroundColor: "white",
-                            '& .MuiOutlinedInput-root': {
-                              '& fieldset': { border: '1px solid #ccc' }
-                            }
-                          }} 
-                        />
-                        <Typography fontSize="0.75rem">日</Typography>
-                      </Box>
-                    </Box>
-                  </td>
+                <TableBody>
+                  {familyMembers.map((member, index) => [
+                    // ⭐ 1) Main Row
+                    <TableRow key={`${member.id}-main`}>
+                      {/* 家族の状況 (rowSpan ทั้งหมด) */}
+                      {index === 0 && (
+                        <TableCell
+                          rowSpan={familyMembers.length * 2}
+                          sx={{
+                            width: '50px',
+                            writingMode: 'vertical-rl',
+                            textOrientation: 'upright',
+                            backgroundColor: '#f5f5f5',
+                            textAlign: 'center',
+                            p: 2,
+                          }}
+                        >
+                          家族の状況
+                        </TableCell>
+                      )}
 
-                  {/* 続柄 */}
-                  <td 
-                    rowSpan={2}
-                    style={{ 
-                      border: '1px solid #000', 
-                      padding: '8px',
-                      verticalAlign: 'top',
-                  
-                    }}
-                  >
-                    <TextField 
-                      fullWidth 
-                      size='small' 
-                      sx={{ 
-                        backgroundColor: "white",
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': { border: '1px solid #ccc' }
-                        }
-                      }} 
-                    />
-                  </td>
+                      {/* 氏名 */}
+                      <TableCell rowSpan={2}>
+                        <TextField fullWidth size="small" />
+                      </TableCell>
 
-                  {/* 勤務先 */}
-                  <td style={{ 
-                    border: '1px solid #000', 
-                    padding: '8px',
-                    verticalAlign: 'top',
-                
-                  }}>
-                    <TextField 
-                      fullWidth 
-                      multiline
-                      rows={2}
-                      sx={{ 
-                        backgroundColor: "white",
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': { border: '1px solid #ccc' }
-                        }
-                      }} 
-                    />
-                  </td>
+                      {/* 生年月日 */}
+                      <TableCell rowSpan={2} sx={{ p: 1, verticalAlign: 'top', backgroundColor: 'white'  }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
 
-                  {/* 勤務先住所 */}
-                  <td style={{ 
-                    border: '1px solid #000', 
-                    padding: '8px',
-                    verticalAlign: 'top',
-                
-                  }}>
-                    <TextField 
-                      fullWidth 
-                      multiline
-                      rows={2}
-                      sx={{ 
-                        backgroundColor: "white",
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': { border: '1px solid #ccc' }
-                        }
-                      }} 
-                    />
-                  </td>
+                          {/* 🔴 Radio S / H */}
+                          <RadioGroup row defaultValue="S" sx={{ mt: -0.5 }}>
+                            <FormControlLabel
+                              value="S"
+                              control={<Radio size="small" />}
+                              label={<Typography fontSize="0.75rem">S</Typography>}
+                            />
+                            <FormControlLabel
+                              value="H"
+                              control={<Radio size="small" />}
+                              label={<Typography fontSize="0.75rem">H</Typography>}
+                            />
+                          </RadioGroup>
 
-                  {/* TEL */}
-                  <td style={{ 
-                    border: '1px solid #000', 
-                    padding: '8px',
-                    verticalAlign: 'top',
-                
-                  }}>
-                    <TextField 
-                      fullWidth 
-                      size='small' 
-                      placeholder="TEL"
-                      sx={{ 
-                        backgroundColor: "white",
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': { border: '1px solid #ccc' }
-                        }
-                      }} 
-                    />
-                  </td>
+                          {/* 🔵 年 */}
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <TextField
+                              size="small"
+                              placeholder="年"
+                              sx={{
+                                width: 70,
+                                '& .MuiOutlinedInput-root fieldset': { border: '1px solid #ccc' },
+                              }}
+                            />
+                            <Typography fontSize="0.75rem">年</Typography>
+                            <TextField
+                              size="small"
+                              placeholder="月"
+                              sx={{
+                                width: 60,
+                                '& .MuiOutlinedInput-root fieldset': { border: '1px solid #ccc' },
+                              }}
+                            />
+                            <Typography fontSize="0.75rem">月</Typography>
 
-                  {/* Delete Button */}
-                  <td 
-                    rowSpan={2}
-                    style={{ 
-                      border: '1px solid #000', 
-                      padding: '8px',
-                      textAlign: 'center',
-                      verticalAlign: 'middle'
-                    }}
-                  >
-                    {familyMembers.length > 1 && (
-                      <Button
-                        variant="contained"
-                        color="error"
-                        size="small"
-                        onClick={() => removeFamilyMember(member.id)}
-                        sx={{ minWidth: 'auto', px: 1 }}
-                      >
-                        削除
-                      </Button>
-                    )}
-                  </td>
-                </tr>
+                            <TextField
+                              size="small"
+                              placeholder="日"
+                              sx={{
+                                width: 60,
+                                '& .MuiOutlinedInput-root fieldset': { border: '1px solid #ccc' },
+                              }}
+                            />
+                          </Box>
+                        </Box>
+                      </TableCell>
 
-                {/* Lower Row - 携帯番号 */}
-                <tr key={`${member.id}-mobile`}>
-                  <td 
-                    colSpan={3} 
-                    style={{ 
-                      border: '1px solid #000', 
-                      padding: '8px',
-                      borderTop: '1px dotted #999',
-                  
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Typography fontSize="0.85rem" sx={{ whiteSpace: 'nowrap' }}>
-                        携帯番号：
-                      </Typography>
-                      <TextField
-                        fullWidth
-                        size='small'
-                        placeholder=""
-                        sx={{ 
-                          backgroundColor: "white",
-                          '& .MuiOutlinedInput-root': {
-                            '& fieldset': { border: '1px solid #ccc' }
-                          }
-                        }}
-                      />
-                    </Box>
-                  </td>
-                </tr>
-              </>
-            ))}
-          </tbody>
-        </table>
-      </Box>
-    </Box>
-  </Grid>
 
-  {/* Add Family Member Button */}
-  <Grid item xs={12}>
-    <Button
-      variant="contained"
-      color="success"
-      onClick={addFamilyMember}
-      sx={{ mt: 2 }}
-    >
-      ➕ 家族を追加
-    </Button>
-  </Grid>
-</Grid>
+                      {/* 続柄 */}
+                      <TableCell rowSpan={2} >
+                        <TextField rows={4} multiline fullWidth size="small" />
+                      </TableCell>
+
+                      {/* 勤務先 */}
+                      <TableCell>
+                        <TextField fullWidth multiline rows={2} />
+                      </TableCell>
+
+                      {/* 勤務先住所 */}
+                      <TableCell>
+                        <TextField fullWidth multiline rows={2} />
+                      </TableCell>
+
+                      {/* TEL */}
+                      <TableCell>
+                        <TextField fullWidth size="small" />
+                      </TableCell>
+
+                      {/* 削除 */}
+                      <TableCell rowSpan={2} align="center">
+                        {familyMembers.length > 1 && (
+                          <Button
+                            variant="contained"
+                            color="error"
+                            size="small"
+                            onClick={() => removeFamilyMember(member.id)}
+                          >
+                            削除
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>,
+
+                    // ⭐ 2) Mobile Row
+                    <TableRow key={`${member.id}-mobile`}>
+                      <TableCell colSpan={3} sx={{ borderTop: '1px dashed #888' }}>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Typography fontSize="0.85rem">携帯番号：</Typography>
+                          <TextField fullWidth size="small" />
+                        </Box>
+                      </TableCell>
+                    </TableRow>,
+                  ])}
+                </TableBody>
+
+              </Table>
+            </TableContainer>
+          </Grid>
+
+          {/* 追加ボタン */}
+          <Grid item xs={12}>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={addFamilyMember}
+              sx={{ mt: 2 }}
+            >
+              ➕ 家族を追加
+            </Button>
+          </Grid>
+        </Grid>
+
         {/* 通所（園）方法 and かかりつけの病院 Section */}
         <Grid container spacing={2} className='pt-5 pl-3'> 
           <Grid item xs={12}> 
@@ -1059,425 +1012,1727 @@ export default function StudentHistory() {
         </Grid>
         
         {/* Vaccination Status Table */}
-        <Grid container spacing={2} className="pt-5 pl-3">
+        <Grid container spacing={2} className='pt-5 pl-3'>
           <Grid item xs={12}>
-            {/* Vaccination Table */}
             <Box sx={{ border: '2px solid #000' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <tbody>
-                  <tr>
-                    {/* 予防接種状況 column header */}
-                    <td
-                      rowSpan={10}
-                      style={{
-                        width: '3%',
-                        borderRight: '1px solid #000',
-                        padding: '8px',
-                        backgroundColor: '#f5f5f5',
-                        verticalAlign: 'middle',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: 0.5,
-                        }}
-                      >
-                        {['予', '防', '接', '種', '状', '況'].map((char, i) => (
-                          <Typography key={i} fontWeight={600} fontSize="0.95rem">
-                            {char}
-                          </Typography>
-                        ))}
-                      </Box>
-                    </td>
-
-                    {/* Vaccine name column header */}
-                    <td
-                      rowSpan={1}
-                      style={{
-                        width: '8%',
-                        borderRight: '1px solid #000',
-                        borderBottom: '1px solid #000',
-                        padding: '8px',
-                        backgroundColor: '#f5f5f5',
-                        verticalAlign: 'middle',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <Typography fontWeight={600}>ワクチン名</Typography>
-                    </td>
-
-                    {/* Age timeline header */}
-                    <td
-                      colSpan={84} // 72 → 84
-                      style={{
-                        borderBottom: '1px solid #000',
-                        padding: '8px',
-                        backgroundColor: '#f5f5f5',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', position: 'relative', height: '24px' }}>
-                        {/* 0–24ヶ月 = 24 unit, 24–72ヶ月 = 48×0.3, 余白含め TOTAL_UNITS = 42 */}
-                        <Typography
-                          fontWeight={600}
-                          fontSize="0.75rem"
-                          sx={{
-                            position: 'absolute',
-                            left: `${(3 / TOTAL_UNITS) * 100}%`,
-                            transform: 'translateX(-50%)',
-                            color: '#000',
-                          }}
-                        >
-                          3か月
-                        </Typography>
-                        <Typography
-                          fontWeight={600}
-                          fontSize="0.75rem"
-                          sx={{
-                            position: 'absolute',
-                            left: `${(6 / TOTAL_UNITS) * 100}%`,
-                            transform: 'translateX(-50%)',
-                            color: '#000',
-                          }}
-                        >
-                          6か月
-                        </Typography>
-                        <Typography
-                          fontWeight={600}
-                          fontSize="0.75rem"
-                          sx={{
-                            position: 'absolute',
-                            left: `${(9 / TOTAL_UNITS) * 100}%`,
-                            transform: 'translateX(-50%)',
-                            color: '#000',
-                          }}
-                        >
-                          9か月
-                        </Typography>
-                        <Typography
-                          fontWeight={600}
-                          fontSize="0.75rem"
-                          sx={{
-                            position: 'absolute',
-                            left: `${(12 / TOTAL_UNITS) * 100}%`,
-                            transform: 'translateX(-50%)',
-                            color: '#000',
-                          }}
-                        >
-                          1歳
-                        </Typography>
-                        <Typography
-                          fontWeight={600}
-                          fontSize="0.75rem"
-                          sx={{
-                            position: 'absolute',
-                            left: `${(18 / TOTAL_UNITS) * 100}%`,
-                            transform: 'translateX(-50%)',
-                            color: '#000',
-                          }}
-                        >
-                          1歳6か月
-                        </Typography>
-                        <Typography
-                          fontWeight={600}
-                          fontSize="0.75rem"
-                          sx={{
-                            position: 'absolute',
-                            left: `${(24 / TOTAL_UNITS) * 100}%`,
-                            transform: 'translateX(-50%)',
-                            color: '#000',
-                          }}
-                        >
-                          2歳
-                        </Typography>
-                        <Typography
-                          fontWeight={600}
-                          fontSize="0.75rem"
-                          sx={{
-                            position: 'absolute',
-                            left: `${((24 + (36 - 24) * 0.3) / TOTAL_UNITS) * 100}%`,
-                            transform: 'translateX(-50%)',
-                            color: '#000',
-                          }}
-                        >
-                          3歳
-                        </Typography>
-                        <Typography
-                          fontWeight={600}
-                          fontSize="0.75rem"
-                          sx={{
-                            position: 'absolute',
-                            left: `${((24 + (48 - 24) * 0.3) / TOTAL_UNITS) * 100}%`,
-                            transform: 'translateX(-50%)',
-                            color: '#000',
-                          }}
-                        >
-                          4歳
-                        </Typography>
-                        <Typography
-                          fontWeight={600}
-                          fontSize="0.75rem"
-                          sx={{
-                            position: 'absolute',
-                            left: `${((24 + (60 - 24) * 0.3) / TOTAL_UNITS) * 100}%`,
-                            transform: 'translateX(-50%)',
-                            color: '#000',
-                          }}
-                        >
-                          5歳
-                        </Typography>
-                        <Typography
-                          fontWeight={600}
-                          fontSize="0.75rem"
-                          sx={{
-                            position: 'absolute',
-                            // ここで 72ヶ月 も TOTAL_UNITS=42 で割るので 右端より少し内側になる
-                            left: `${((24 + (72 - 24) * 0.3) / TOTAL_UNITS) * 100}%`,
-                            transform: 'translateX(-50%)',
-                            color: '#000',
-                          }}
-                        >
-                          6歳
-                        </Typography>
-                      </Box>
-                    </td>
-                  </tr>
-
-                  {/* Vaccination rows */}
-                  {[
-                    {
-                      name: 'B型肝炎',
-                      bars: [{ start: 0, end: 8, type: 'standard' }],
-                    },
-                    {
-                      name: 'BCG',
-                      bars: [{ start: 5, end: 12, type: 'standard' }],
-                    },
-                    {
-                      name: '4種混合',
-                      bars: [{ start: 2, end: 12, type: 'standard' }],
-                    },
-                    {
-                      name: 'ロタウイルス',
-                      bars: [{ start: 2, end: 8, type: 'recommended' }],
-                    },
-                    {
-                      name: '麻しん(はしか)\n風しん',
-                      bars: [
-                        { start: 12, end: 15, type: 'recommended' },
-                        { start: 12, end: 24, type: 'standard' },
-                        { start: 60, end: 72, type: 'recommended' },
-                      ],
-                    },
-                    {
-                      name: '日本脳炎',
-                      bars: [{ start: 36, end: 72, type: 'standard' }],
-                    },
-                    {
-                      name: 'ヒブ',
-                      bars: [{ start: 2, end: 60, type: 'combined' }],
-                    },
-                    {
-                      name: '小児肺炎球菌',
-                      bars: [{ start: 2, end: 60, type: 'combined' }],
-                    },
-                    {
-                      name: '水痘\n(みずぼうそう)',
-                      bars: [
-                        { start: 12, end: 15, type: 'recommended' },
-                        { start: 12, end: 36, type: 'standard' },
-                      ],
-                    },
-                  ].map((vaccine, index) => (
-                    <tr key={index}>
-                      <td
-                        style={{
-                          borderRight: '1px solid #000',
-                          borderBottom: index === 8 ? 'none' : '1px solid #000',
-                          padding: '8px',
-                          verticalAlign: 'middle',
-                          width: '8%',
-                        }}
-                      >
-                        <Typography
-                          fontSize="0.85rem"
-                          fontWeight={600}
-                          sx={{ whiteSpace: 'pre-line' }}
-                        >
-                          {vaccine.name}
-                        </Typography>
-                      </td>
-                      <td
-                        colSpan={84}
-                        style={{
-                          borderBottom: index === 8 ? 'none' : '1px solid #000',
-                          padding: 0,
-                          position: 'relative',
-                          height: '40px',
-                        }}
-                      >
-                        {/* Grid lines */}
-                        
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          height: '100%',
-                          display: 'flex',
-                        }}
-                      >
-                        {[...Array(84)].map((_, i) => {
-                          // i = 0–71 → 0–72ヶ月ぶん
-                          // i = 72–83 → 余白用の列
-                          const isYearBoundary = [36, 48, 60, 72].includes(i); // ★ เพิ่ม 72
-                          const showLine = i < 24 || isYearBoundary;           // ★ ยังใช้เงื่อนไขเดิม
-
-                          let flexValue: number;
-                          if (i < 24) {
-                            flexValue = 1; // 0–24ヶ月
-                          } else if (i < 72) {
-                            flexValue = 0.3; // 24–72ヶ月
-                          } else {
-                            flexValue = 0.3; // padding 部分も同じ幅
-                          }
-
-                          return (
-                            <Box
-                              key={i}
-                              sx={{
-                                flex: flexValue,
-                                borderRight:
-                                  i === 83
-                                    ? 'none'
-                                    : showLine               // ★ ตัดเงื่อนไข i < 72 ออก
-                                    ? '1px dashed #ddd'
-                                    : 'none',
-                              }}
-                            />
-                          );
-                        })}
-                      </Box>
-
-
-                        {/* Vaccination bars */}
-                        {vaccine.bars.map((bar, barIndex) => {
-                          let bgColor = '#b8cce4'; // recommended (blue)
-                          let borderColor = '#7fa3cc';
-
-                          if (bar.type === 'standard') {
-                            bgColor = '#d9d9d9';
-                            borderColor = '#b0b0b0';
-                          } else if (bar.type === 'combined') {
-                            bgColor = '#b8cce4';
-                            borderColor = '#7fa3cc';
-                          }
-
-                          const startPercent = calculatePosition(bar.start);
-                          const endPercent = calculatePosition(bar.end);
-                          const widthPercent = endPercent - startPercent;
-
-                          return (
-                            <Box
-                              key={barIndex}
-                              sx={{
-                                position: 'absolute',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                left: `${startPercent}%`,
-                                width: `${widthPercent}%`,
-                                height: 16,
-                                backgroundColor: bgColor,
-                                border: `1px solid ${borderColor}`,
-                                boxSizing: 'border-box',
-                                zIndex: 1,
-                              }}
-                            />
-                          );
-                        })}
-
-                        {/* Combined bar for later period (for ヒブ and 小児肺炎球菌) */}
-                        {(vaccine.name === 'ヒブ' || vaccine.name === '小児肺炎球菌') && (
-                          <Box
-                            sx={{
-                              position: 'absolute',
-                              top: '50%',
-                              transform: 'translateY(-50%)',
-                              left: `${calculatePosition(12)}%`,
-                              width: `${
-                                calculatePosition(60) - calculatePosition(12)
-                              }%`,
-                              height: 16,
-                              backgroundColor: '#d9d9d9',
-                              border: '1px solid #b0b0b0',
-                              boxSizing: 'border-box',
-                              zIndex: 1,
-                            }}
-                          />
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Box>
-
-            {/* Legend and Notes */}
-            <Box
-              sx={{
-                p: 2,
-                backgroundColor: '#fff5f5',
-                border: '2px solid #000',
-                borderTop: 'none',
-                textAlign: 'left',           // ★ บังคับข้อความชิดซ้าย
-              }}
-            >
-              <Box sx={{ display: 'flex', gap: 3, mb: 1, justifyContent: "flex-start" }}>   {/* ★ เพิ่ม */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Box
-                    sx={{
-                      width: 24,
-                      height: 16,
-                      backgroundColor: '#b8cce4',
-                      border: '1px solid #7fa3cc',
-                    }}
-                  />
-                  <Typography fontSize="0.85rem" color="error" fontWeight={600}>
-                    標準的な接種年齢
-                  </Typography>
-                </Box>
-
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Box
-                    sx={{
-                      width: 24,
-                      height: 16,
-                      backgroundColor: '#d9d9d9',
-                      border: '1px solid #b0b0b0',
-                    }}
-                  />
-                  <Typography fontSize="0.85rem" color="error" fontWeight={600}>
-                    接種が定められている年齢
-                  </Typography>
-                </Box>
+              <Box sx={{ p: 1.5, backgroundColor: '#f5f5f5', borderBottom: '1px solid #000' }}>
+                <Typography fontWeight={600}>予防接種記録入力</Typography>
               </Box>
 
-              <Typography fontSize="0.85rem" color="error" sx={{ mb: 0.5 }}>
-                ※麻しん・風しん(２期)の対象は年長児。
-              </Typography>
-              <Typography fontSize="0.85rem" color="error">
-                ※麻しん・風しんは、１期・２期とも、接種年齢になったら、なるべく早く受けることが望ましい。
-              </Typography>
+              <Table size="small">
+                <TableBody>
+                  {[
+                    { name: 'B型肝炎', count: 2 },
+                    { name: 'BCG', count: 1 },
+                    { name: '4種混合', count: 2 },
+                    { name: 'ロタウイルス', count: 1 },
+                    { name: '麻しん風しん', count: 2 },
+                    { name: '日本脳炎', count: 2 },
+                    { name: 'ヒブ', count: 2 },
+                    { name: '小児肺炎球菌', count: 2 },
+                    { name: '水痘', count: 2 },
+                  ].map((vaccine, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell sx={{ width: '15%', fontWeight: 600, fontSize: '0.9rem' }}>
+                        {vaccine.name}
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', py: 0.5 }}>
+                          {[...Array(vaccine.count)].map((_, i) => (
+                            <Box key={i} sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+                              <Typography fontSize="0.85rem" color="text.secondary">
+                                {i + 1}回:
+                              </Typography>
+                              <TextField
+                                type="date"
+                                size="small"
+                                InputLabelProps={{ shrink: true }}
+                                sx={{ width: 150 }}
+                              />
+                            </Box>
+                          ))}
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </Box>
-
           </Grid>
         </Grid>
-             
+
+        {/* 乳幼児健診・既往症 Section */}
+        <Grid container spacing={2} className='pt-5 pl-3'>
+          <Grid item xs={12}>
+            <TableContainer sx={{ border: '1px solid #000' }}>
+              <Table sx={{ '& td, & th': { border: '1px solid #000' }, borderCollapse: 'collapse' }}>
+                <TableHead>
+                  {/* Header Row 1 */}
+                  <TableRow>
+                    <TableCell
+                      rowSpan={2}
+                      colSpan={2}
+                      sx={{
+                        width: '10%',
+                        backgroundColor: '#f5f5f5',
+                        textAlign: 'center',
+                        verticalAlign: 'middle',
+                        padding: '16px 8px',
+                      }}
+                    >
+                      <Typography sx={{ letterSpacing: '8px' }}>乳幼児健診</Typography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'center', padding: '8px', width: '10%' }}>
+                      <Typography fontWeight={600}>4か月</Typography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'center', padding: '8px', width: '10%' }}>
+                      <Typography fontWeight={600}>10か月</Typography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'center', padding: '8px', width: '10%' }}>
+                      <Typography fontWeight={600}>1歳6か月</Typography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'center', padding: '8px', width: '10%' }}>
+                      <Typography fontWeight={600}>3歳</Typography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'center', padding: '8px', width: '12%' }}>
+                      <Typography fontWeight={600}>特記事項</Typography>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Header Row 2 - Era selection */}
+
+                  <TableRow>
+                    {/* 4か月 column */}
+                    <TableCell sx={{ textAlign: 'center', padding: '4px' }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                        <RadioGroup row>
+                          <FormControlLabel
+                            value="heisei"
+                            control={<Radio size="small" />}
+                            label="H"
+                            sx={{ mr: 0.5, '& .MuiFormControlLabel-label': { fontSize: '0.85rem' } }}
+                          />
+                          <FormControlLabel
+                            value="reiwa"
+                            control={<Radio size="small" />}
+                            label="R"
+                            sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.85rem' } }}
+                          />
+                        </RadioGroup>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">年</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">月</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">日</Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+
+                    {/* 10か月 column */}
+                    <TableCell sx={{ textAlign: 'center', padding: '4px' }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                        <RadioGroup row>
+                          <FormControlLabel
+                            value="heisei"
+                            control={<Radio size="small" />}
+                            label="H"
+                            sx={{ mr: 0.5, '& .MuiFormControlLabel-label': { fontSize: '0.85rem' } }}
+                          />
+                          <FormControlLabel
+                            value="reiwa"
+                            control={<Radio size="small" />}
+                            label="R"
+                            sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.85rem' } }}
+                          />
+                        </RadioGroup>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">年</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">月</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">日</Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+
+                    {/* 1歳6か月 column */}
+                    <TableCell sx={{ textAlign: 'center', padding: '4px' }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                        <RadioGroup row>
+                          <FormControlLabel
+                            value="heisei"
+                            control={<Radio size="small" />}
+                            label="H"
+                            sx={{ mr: 0.5, '& .MuiFormControlLabel-label': { fontSize: '0.85rem' } }}
+                          />
+                          <FormControlLabel
+                            value="reiwa"
+                            control={<Radio size="small" />}
+                            label="R"
+                            sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.85rem' } }}
+                          />
+                        </RadioGroup>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">年</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">月</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">日</Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+
+                    {/* 3歳 column */}
+                    <TableCell sx={{ textAlign: 'center', padding: '4px' }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                        <RadioGroup row>
+                          <FormControlLabel
+                            value="heisei"
+                            control={<Radio size="small" />}
+                            label="H"
+                            sx={{ mr: 0.5, '& .MuiFormControlLabel-label': { fontSize: '0.85rem' } }}
+                          />
+                          <FormControlLabel
+                            value="reiwa"
+                            control={<Radio size="small" />}
+                            label="R"
+                            sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.85rem' } }}
+                          />
+                        </RadioGroup>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">年</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">月</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">日</Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+
+                    {/* 特記事項 column */}
+                    <TableCell sx={{ padding: '4px' }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        multiline
+                        rows={2}
+                        sx={{
+                          backgroundColor: 'white',
+                          '& .MuiOutlinedInput-root': {
+                            '& fieldset': { borderColor: '#999' },
+                          },
+                        }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody>
+                  {/* Row 1: 川崎病, 心臓病 */}
+                  <TableRow>
+                    <TableCell
+                      rowSpan={9}
+                      sx={{
+                        backgroundColor: '#f5f5f5',
+                        textAlign: 'center',
+                        verticalAlign: 'middle',
+                        writingMode: 'vertical-rl',
+                        textOrientation: 'upright',
+                        padding: '16px 8px',
+                      }}
+                    >
+                      <Typography sx={{ letterSpacing: '12px' }}>既往症</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '8px', width: '8%' }}>
+                      <Typography fontSize="0.9rem">川崎病</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell  sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">先天性股関節脱臼</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell rowSpan={2} sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">大きな外傷や手術</Typography>
+                    </TableCell>
+                    <TableCell rowSpan={2} sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Typography fontSize="0.85rem">(</Typography>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            sx={{
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">)</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Typography fontSize="0.85rem">(</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">歳</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">か月)</Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 2: 心臓病, ヘルニア */}
+                  <TableRow>
+                    <TableCell sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">心臓病</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell  sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">ヘルニア</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 3: 腎臓病, 肺炎 */}
+                  <TableRow>
+                    <TableCell sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">腎臓病</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell  sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">肺炎</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell rowSpan={2}  sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">その他の重い病気</Typography>
+                    </TableCell>
+                    <TableCell rowSpan={2} sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Typography fontSize="0.85rem">(</Typography>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            sx={{
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">)</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Typography fontSize="0.85rem">(</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">歳</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">か月)</Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 4: 肝臓病, 自家中毒 */}
+                  <TableRow>
+                    <TableCell sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">肝臓病</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell  sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">自家中毒</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 5: 麻しん, その他の重い病気 */}
+                  <TableRow>
+                    <TableCell sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">麻しん</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell  sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">脱臼の経験</Typography>
+                    </TableCell>
+                    <TableCell colSpan={3} sx={{ padding: '4px' }}>
+                      <RadioGroup row>
+                        <FormControlLabel
+                          value="yes"
+                          control={<Radio size="small" />}
+                          label="有"
+                          sx={{ mr: 1 }}
+                        />
+                        <FormControlLabel
+                          value="no"
+                          control={<Radio size="small" />}
+                          label="無"
+                        />
+                      </RadioGroup>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 6: 風しん, けいれん */}
+                  <TableRow>
+                    <TableCell sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">風しん</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell  sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">けいれん(ひきつけ)</Typography>
+                    </TableCell>
+                    <TableCell colSpan={3} sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                        <RadioGroup row>
+                          <FormControlLabel
+                            value="yes"
+                            control={<Radio size="small" />}
+                            label="有"
+                            sx={{ mr: 1 }}
+                          />
+                          <FormControlLabel
+                            value="no"
+                            control={<Radio size="small" />}
+                            label="無"
+                          />
+                        </RadioGroup>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Typography fontSize="0.85rem">(有熱</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">回・無熱</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              width: '40px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">回)</Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 7: 水痘, 初めてけいれんを起こした月齢 */}
+                  <TableRow>
+                    <TableCell sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">水痘</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell  sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">初めてけいれんを起こした月齢</Typography>
+                    </TableCell>
+                    <TableCell colSpan={3} sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 8: 百日咳, 喘息の診断 */}
+                  <TableRow>
+                    <TableCell sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">百日咳</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '4px' }}>
+                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell  sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">喘息の診断</Typography>
+                    </TableCell>
+                    <TableCell colSpan={3} sx={{ padding: '4px' }}>
+                      <RadioGroup row>
+                        <FormControlLabel
+                          value="yes"
+                          control={<Radio size="small" />}
+                          label="有"
+                          sx={{ mr: 1 }}
+                        />
+                        <FormControlLabel
+                          value="no"
+                          control={<Radio size="small" />}
+                          label="無"
+                        />
+                      </RadioGroup>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 9: 流行性耳下腺炎, アレルギーの診断 */}
+                  <TableRow>
+                    <TableCell sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">流行性耳下腺炎</Typography>
+                    </TableCell>
+                    <TableCell sx={{ padding: '4px' }}>
+                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography fontSize="0.85rem">(</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">歳</Typography>
+                        <TextField
+                          size="small"
+                          sx={{
+                            width: '40px',
+                            backgroundColor: 'white',
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': { borderColor: '#999' },
+                            },
+                          }}
+                        />
+                        <Typography fontSize="0.85rem">か月)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell  sx={{ padding: '8px' }}>
+                      <Typography fontSize="0.9rem">アレルギーの診断</Typography>
+                    </TableCell>
+                    <TableCell colSpan={3} sx={{ padding: '4px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                        <RadioGroup row>
+                          <FormControlLabel
+                            value="yes"
+                            control={<Radio size="small" />}
+                            label="有"
+                            sx={{ mr: 1 }}
+                          />
+                          <FormControlLabel
+                            value="no"
+                            control={<Radio size="small" />}
+                            label="無"
+                          />
+                        </RadioGroup>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
+                          <Typography fontSize="0.85rem">(有の場合:</Typography>
+                          <TextField
+                            size="small"
+                            sx={{
+                              flex: 1,
+                              minWidth: '100px',
+                              backgroundColor: 'white',
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': { borderColor: '#999' },
+                              },
+                            }}
+                          />
+                          <Typography fontSize="0.85rem">)</Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Grid>
+        </Grid>
+
+        <Grid container spacing={2} className='pt-5 pl-3'>
+          <Grid item xs={12}>
+            <TableContainer 
+              component={Box} 
+              sx={{ 
+                border: '1px solid #000',
+                overflow: 'auto'
+              }}
+            >
+              <Table 
+                sx={{ 
+                  minWidth: 650,
+                  '& .MuiTableCell-root': {
+                    border: '1px solid #000',
+                    borderCollapse: 'collapse'
+                  }
+                }} 
+                size="small"
+              >
+                <TableHead>
+                  <TableRow>
+                    {/* Empty Cell - Top Left */}
+                    <TableCell 
+                      sx={{ 
+                        width: '50px',
+                        p: 0,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    />
+
+                    {/* Vertical Label - 現在の体質 */}
+                    <TableCell 
+                      align="center"
+                      sx={{ 
+                        p: 2,
+                        backgroundColor: '#f5f5f5',
+                      }}
+                    >
+                      <Typography sx={{ 
+                        fontSize: '16px',
+                        letterSpacing: '8px',
+                        lineHeight: 1
+                      }}>
+                    
+                      </Typography>
+                    </TableCell>
+
+                    {/* Column Headers */}
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      入所時
+                    </TableCell>
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      年度
+                    </TableCell>
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      年度
+                    </TableCell>
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      年度
+                    </TableCell>
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      年度
+                    </TableCell>
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      年度
+                    </TableCell>
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      年度
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody>
+                  {/* 現　在　の　体　質 */}
+                  <TableRow>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white', fontSize: '0.9rem' }} rowSpan={9} align="center" >
+                      現　在　の　体　質
+                    </TableCell>
+                    
+                  </TableRow>
+                  <TableRow>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white', fontSize: '0.9rem' }}>
+                      かぜをひきやすい
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 2 - 発熱しやすい */}
+                  <TableRow>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white', fontSize: '0.9rem' }}>
+                      発熱しやすい
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 3 - 時々腹痛を訴える */}
+                  <TableRow>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white', fontSize: '0.9rem' }}>
+                      時々腹痛を訴える
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 4 - ゼイゼイがある */}
+                  <TableRow>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white', fontSize: '0.9rem' }}>
+                      ゼイゼイがある
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 5 - 湿疹ができやすい */}
+                  <TableRow>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white', fontSize: '0.9rem' }}>
+                      湿疹ができやすい
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 6 - 鼻血ができやすい */}
+                  <TableRow>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white', fontSize: '0.9rem' }}>
+                      鼻血ができやすい
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 7 - 中耳炎になりやすい */}
+                  <TableRow>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white', fontSize: '0.9rem' }}>
+                      中耳炎になりやすい
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 8 - 平熱 */}
+                  <TableRow>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white', fontSize: '0.9rem' }}>
+                      平　熱
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <TextField 
+                          fullWidth 
+                          size='small' 
+                          sx={{ 
+                            backgroundColor: "white", 
+                            '& .MuiOutlinedInput-root': { 
+                              '& fieldset': { border: '1px solid #ccc' } 
+                            } 
+                          }} 
+                        />
+                        <Typography sx={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>℃</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <TextField 
+                          fullWidth 
+                          size='small' 
+                          sx={{ 
+                            backgroundColor: "white", 
+                            '& .MuiOutlinedInput-root': { 
+                              '& fieldset': { border: '1px solid #ccc' } 
+                            } 
+                          }} 
+                        />
+                        <Typography sx={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>℃</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <TextField 
+                          fullWidth 
+                          size='small' 
+                          sx={{ 
+                            backgroundColor: "white", 
+                            '& .MuiOutlinedInput-root': { 
+                              '& fieldset': { border: '1px solid #ccc' } 
+                            } 
+                          }} 
+                        />
+                        <Typography sx={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>℃</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <TextField 
+                          fullWidth 
+                          size='small' 
+                          sx={{ 
+                            backgroundColor: "white", 
+                            '& .MuiOutlinedInput-root': { 
+                              '& fieldset': { border: '1px solid #ccc' } 
+                            } 
+                          }} 
+                        />
+                        <Typography sx={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>℃</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <TextField 
+                          fullWidth 
+                          size='small' 
+                          sx={{ 
+                            backgroundColor: "white", 
+                            '& .MuiOutlinedInput-root': { 
+                              '& fieldset': { border: '1px solid #ccc' } 
+                            } 
+                          }} 
+                        />
+                        <Typography sx={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>℃</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <TextField 
+                          fullWidth 
+                          size='small' 
+                          sx={{ 
+                            backgroundColor: "white", 
+                            '& .MuiOutlinedInput-root': { 
+                              '& fieldset': { border: '1px solid #ccc' } 
+                            } 
+                          }} 
+                        />
+                        <Typography sx={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>℃</Typography>
+                      </Box>
+                    </TableCell>   
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <TextField 
+                          fullWidth 
+                          size='small' 
+                          sx={{ 
+                            backgroundColor: "white", 
+                            '& .MuiOutlinedInput-root': { 
+                              '& fieldset': { border: '1px solid #ccc' } 
+                            } 
+                          }} 
+                        />
+                        <Typography sx={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>℃</Typography>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 9 - 保育園で気をつけてほしいこと */}
+                  <TableRow>
+                    <TableCell colSpan={2}>
+                      保育園で気をつけてほしいこと その他特記事項
+                    </TableCell>
+                    <TableCell colSpan={7} sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField 
+                        fullWidth 
+                        multiline
+                        rows={2}
+                        sx={{ 
+                          backgroundColor: "white",
+                          '& .MuiOutlinedInput-root': {
+                            '& fieldset': { border: '1px solid #ccc' }
+                          }
+                        }} 
+                      />
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Grid>
+        </Grid>
+
+        <Grid container spacing={2} className='pt-5 pl-3'>
+          <Grid item xs={12}>
+            <TableContainer 
+              component={Box} 
+              sx={{ 
+                border: '1px solid #000',
+                overflow: 'auto'
+              }}
+            >
+              <Table 
+                sx={{ 
+                  minWidth: 650,
+                  '& .MuiTableCell-root': {
+                    border: '1px solid #000',
+                    borderCollapse: 'collapse'
+                  }
+                }} 
+                size="small"
+              >
+                <TableHead>
+                  <TableRow>
+                    {/* Empty Cell - Top Left */}
+                    <TableCell 
+                      sx={{ 
+                        width: '80px',
+                        p: 0,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    />
+
+                    {/* Column Headers with age groups */}
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      <Box>
+                        <Typography sx={{ fontSize: '0.9rem', fontWeight: 600 }}>年度</Typography>
+                        <Typography sx={{ fontSize: '0.85rem' }}>(0歳児)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      <Box>
+                        <Typography sx={{ fontSize: '0.9rem', fontWeight: 600 }}>年度</Typography>
+                        <Typography sx={{ fontSize: '0.85rem' }}>(0歳児)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      <Box>
+                        <Typography sx={{ fontSize: '0.9rem', fontWeight: 600 }}>年度</Typography>
+                        <Typography sx={{ fontSize: '0.85rem' }}>(1歳児)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      <Box>
+                        <Typography sx={{ fontSize: '0.9rem', fontWeight: 600 }}>年度</Typography>
+                        <Typography sx={{ fontSize: '0.85rem' }}>(2歳児)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      <Box>
+                        <Typography sx={{ fontSize: '0.9rem', fontWeight: 600 }}>年度</Typography>
+                        <Typography sx={{ fontSize: '0.85rem' }}>(3歳児)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      <Box>
+                        <Typography sx={{ fontSize: '0.9rem', fontWeight: 600 }}>年度</Typography>
+                        <Typography sx={{ fontSize: '0.85rem' }}>(4歳児)</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        p: 1,
+                        backgroundColor: '#f5f5f5'
+                      }}
+                    >
+                      <Box>
+                        <Typography sx={{ fontSize: '0.9rem', fontWeight: 600 }}>年度</Typography>
+                        <Typography sx={{ fontSize: '0.85rem' }}>(5歳児)</Typography>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody>
+                  {/* Row 1 - 主任 */}
+                  <TableRow>
+                    <TableCell 
+                      align="center"
+                      sx={{ 
+                        p: 1, 
+                        backgroundColor: 'white', 
+                        fontSize: '0.9rem',
+                        fontWeight: 500
+                      }}
+                    >
+                      主任
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Row 2 - 担任 */}
+                  <TableRow>
+                    <TableCell 
+                      align="center"
+                      sx={{ 
+                        p: 1, 
+                        backgroundColor: 'white', 
+                        fontSize: '0.9rem',
+                        fontWeight: 500
+                      }}
+                    >
+                      担任
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                    <TableCell sx={{ p: 1, backgroundColor: 'white' }}>
+                      <TextField fullWidth size='small' sx={{ backgroundColor: "white", '& .MuiOutlinedInput-root': { '& fieldset': { border: '1px solid #ccc' } } }} />
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Grid>
+        </Grid>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 2,
+            mt: 3,
+            mb: 3,
+          }}
+        >
+          <Button
+            variant="outlined"
+            color="warning"
+            startIcon={<ArrowBack />}
+            sx={{ px: 4, py: 1.5 }}
+          >
+            {t("overallplanadd.cancel")}
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<Save />}
+            sx={{
+              px: 4,
+              py: 1.5,
+              background: "linear-gradient(45deg, #4caf50, #8bc34a)",
+              "&:hover": {
+                background: "linear-gradient(45deg, #388e3c, #689f38)",
+              },
+            }}
+          >
+            {t("overallplanadd.save")}
+          </Button>
+        </Box>            
       </ContentMain>
     </>
   );
