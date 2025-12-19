@@ -320,6 +320,14 @@ const Router = createBrowserRouter([
         element: <StudentHistoryPages />
       },
       {
+        path: "/student/History/edit/",
+        element: <StudentHistoryPages />
+      },
+      {
+        path: "/student/History/view/",
+        element: <StudentHistoryPages />
+      },
+      {
         path: "/student/Health",
         element: <HealthCheckFormPages />
       },

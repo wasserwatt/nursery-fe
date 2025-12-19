@@ -25,7 +25,8 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import StackedBarChartIcon from '@mui/icons-material/StackedBarChart';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useChildren } from "../../contexts/childrenContext";
 
 interface Column {
   id: 'name' | 'classroom' | 'date' | 'timestart' | 'timeend' | 'detail';
@@ -37,7 +38,7 @@ interface Column {
 
 const columns: readonly Column[] = [
   { id: 'name', label: '氏名', minWidth: 150 },
-  { id: 'classroom', label: '歳児', minWidth: 150 },
+  { id: 'classroom', label: '歳児', minWidth: 100 }, // อายุตอนเข้า
   {
     id: 'date',
     label: 'クラス名',
@@ -59,168 +60,103 @@ const columns: readonly Column[] = [
   {
     id: 'detail',
     label: '',
-    minWidth: 150,
+    minWidth: 100,
+    align: 'right',
   },
-];
-
-interface Data {
-  name: string;
-  classroom: string;
-  date: string;
-  timestart: JSX.Element;
-  timeend: JSX.Element;
-  detail: JSX.Element;
-}
-
-function createData(
-  name: string,
-  classroom: string,
-  date: string,
-  timestart: JSX.Element,
-  timeend: JSX.Element,
-  detail: JSX.Element
-): Data {
-  return { name, classroom, date, timestart, timeend, detail };
-}
-
-const rows = [
-  createData('濱千代　智宏', '0 歳児', 'くま',
-    <IconButton aria-label="delete" size="small" component={Link} to="/student/progressdzero">
-      <StackedBarChartIcon fontSize="small" className='text-red-600' />
-    </IconButton>
-
-    ,
-    <IconButton aria-label="delete" size="small" component={Link} to="/student/daycare">
-      <AssignmentIcon fontSize="medium" className='text-cyan-500' />
-    </IconButton>
-    ,
-    <>
-      <IconButton aria-label="delete" size="small" >
-        <EditIcon fontSize="small" className='text-sky-600' />
-      </IconButton>
-      <IconButton aria-label="delete" size="small" >
-        <RemoveRedEyeIcon fontSize="small" className='text-amber-500' />
-      </IconButton>
-      <IconButton aria-label="delete" size="small" >
-        <DeleteIcon fontSize="small" className='text-red-600' />
-      </IconButton>
-    </>
-  ),
-  createData('濱千代　定 ', '1 歳児', 'ぱんだ',
-    <IconButton aria-label="delete" size="small" component={Link} to="/student/progressdone">
-      <StackedBarChartIcon fontSize="small" className='text-red-600' />
-    </IconButton>
-
-    ,
-    <IconButton aria-label="delete" size="small" component={Link} to="/student/daycare">
-      <AssignmentIcon fontSize="medium" className='text-cyan-500' />
-    </IconButton>
-    ,
-    <>
-      <IconButton aria-label="delete" size="small" >
-        <EditIcon fontSize="small" className='text-sky-600' />
-      </IconButton>
-      <IconButton aria-label="delete" size="small" >
-        <RemoveRedEyeIcon fontSize="small" className='text-amber-500' />
-      </IconButton>
-      <IconButton aria-label="delete" size="small" >
-        <DeleteIcon fontSize="small" className='text-red-600' />
-      </IconButton>
-    </>
-  ), createData('立石　太平', '2 歳児', 'ぱんだ',
-    <IconButton aria-label="delete" size="small" component={Link} to="/student/progressdtwo">
-      <StackedBarChartIcon fontSize="small" className='text-red-600' />
-    </IconButton>
-
-    ,
-    <IconButton aria-label="delete" size="small" component={Link} to="/student/daycare">
-      <AssignmentIcon fontSize="medium" className='text-cyan-500' />
-    </IconButton>
-    ,
-    <>
-      <IconButton aria-label="delete" size="small" >
-        <EditIcon fontSize="small" className='text-sky-600' />
-      </IconButton>
-      <IconButton aria-label="delete" size="small" >
-        <RemoveRedEyeIcon fontSize="small" className='text-amber-500' />
-      </IconButton>
-      <IconButton aria-label="delete" size="small" >
-        <DeleteIcon fontSize="small" className='text-red-600' />
-      </IconButton>
-    </>
-  ), createData('勝俣　悠生', '3 歳児', 'ぱんだ',
-    <IconButton aria-label="delete" size="small" component={Link} to="/student/progressdthree">
-      <StackedBarChartIcon fontSize="small" className='text-red-600' />
-    </IconButton>
-
-    ,
-    <IconButton aria-label="delete" size="small" component={Link} to="/student/daycare">
-      <AssignmentIcon fontSize="medium" className='text-cyan-500' />
-    </IconButton>
-    ,
-    <>
-      <IconButton aria-label="delete" size="small" >
-        <EditIcon fontSize="small" className='text-sky-600' />
-      </IconButton>
-      <IconButton aria-label="delete" size="small" >
-        <RemoveRedEyeIcon fontSize="small" className='text-amber-500' />
-      </IconButton>
-      <IconButton aria-label="delete" size="small" >
-        <DeleteIcon fontSize="small" className='text-red-600' />
-      </IconButton>
-    </>
-  ),
-  createData('勝俣　松代', '4 歳児', 'かめ',
-    <IconButton aria-label="delete" size="small"  component={Link} to="/student/progressdfour">
-      <StackedBarChartIcon fontSize="small" className='text-red-600' />
-    </IconButton>
-
-    ,
-    <IconButton aria-label="delete" size="small" component={Link} to="/student/daycare">
-      <AssignmentIcon fontSize="medium" className='text-cyan-500' />
-    </IconButton>
-    ,
-    <>
-      <IconButton aria-label="delete" size="small" >
-        <EditIcon fontSize="small" className='text-sky-600' />
-      </IconButton>
-      <IconButton aria-label="delete" size="small" >
-        <RemoveRedEyeIcon fontSize="small" className='text-amber-500' />
-      </IconButton>
-      <IconButton aria-label="delete" size="small" >
-        <DeleteIcon fontSize="small" className='text-red-600' />
-      </IconButton>
-    </>
-  ),
-  createData('広田　木太郎', '5 歳児', 'かめ',
-    <IconButton aria-label="delete" size="small"  component={Link} to="/student/progressdfive">
-      <StackedBarChartIcon fontSize="small" className='text-red-600' />
-    </IconButton>
-
-    ,
-    <IconButton aria-label="delete" size="small" component={Link} to="/student/daycare">
-      <AssignmentIcon fontSize="medium" className='text-cyan-500' />
-    </IconButton>
-    ,
-    <>
-      <IconButton aria-label="delete" size="small" >
-        <EditIcon fontSize="small" className='text-sky-600' />
-      </IconButton>
-      <IconButton aria-label="delete" size="small" >
-        <RemoveRedEyeIcon fontSize="small" className='text-amber-500' />
-      </IconButton>
-      <IconButton aria-label="delete" size="small" >
-        <DeleteIcon fontSize="small" className='text-red-600' />
-      </IconButton>
-    </>
-  ),
 ];
 
 export default function Student() {
   const [classroom, setClassroom] = useState('');
   const [classroom1, setClassroom1] = useState('');
   const [searchText, setSearchText] = useState('');
-  const [filteredRows, setFilteredRows] = useState(rows);
+  
+  // State สำหรับเก็บข้อมูลที่ดึงมาจาก API
+  const [rows, setRows] = useState<any[]>([]);
+  const [filteredRows, setFilteredRows] = useState<any[]>([]);
+  
+  const { fetchChild } = useChildren();
+  const navigate = useNavigate();
+
+  // ฟังก์ชันคำนวณปีงบประมาณ (Fiscal Year)
+  // ญี่ปุ่นเริ่มปีการศึกษาเดือน 4 (เมษา)
+  // ถ้าเดือนเกิด < 3 (ม.ค, ก.พ, มี.ค) ให้นับเป็นปีงบประมาณก่อนหน้า
+  const getFiscalYear = (dateStr: string) => {
+    if (!dateStr) return 0;
+    const d = new Date(dateStr);
+    // เดือนใน JS เริ่ม 0-11 (0=Jan, 2=Mar, 3=Apr)
+    // ถ้าเกิดก่อน 1 เมษา (เดือน 0, 1, 2) ถือว่าเป็นรุ่นปีก่อนหน้า
+    if (d.getMonth() < 3) {
+      return d.getFullYear() - 1;
+    }
+    return d.getFullYear();
+  };
+
+  // ดึงข้อมูลเมื่อโหลดหน้าเว็บ
+  useEffect(() => {
+    const loadData = async () => {
+      const children = await fetchChild();
+      if (children) {
+        const formattedRows = children.map((child: any) => {
+          // คำนวณอายุตอนเข้า (Entrance Age Class)
+          // สูตร: ปีงบประมาณที่เข้า - ปีงบประมาณเกิด
+          // เช่น เกิด 2020 เข้า 2021 = 1 ขวบ (ตอนเข้า)
+          const birthFY = getFiscalYear(child.birthDate);
+          const adminFY = getFiscalYear(child.admissionDate);
+          const ageClass = adminFY - birthFY;
+
+          return {
+            ...child, // เก็บข้อมูลดิบไว้ใช้ส่งต่อ
+            name: child.name_child,
+            classroom: `${ageClass >= 0 ? ageClass : 0} 歳児`, // แสดงอายุตอนเข้า
+            date: 'ぱんだ', // ตัวอย่าง Class (ยังไม่มีใน DB ให้ใส่ Mock หรือดึงจาก field อื่น)
+            
+            // Icon ตามที่ขอให้แสดงเฉยๆ
+            timestart: (
+              <IconButton aria-label="progress" size="small" component={Link} to="/student/progressdthree">
+                <StackedBarChartIcon fontSize="small" className='text-red-600' />
+              </IconButton>
+            ),
+            timeend: (
+              <IconButton aria-label="daycare" size="small" component={Link} to="/student/daycare">
+                <AssignmentIcon fontSize="medium" className='text-cyan-500' />
+              </IconButton>
+            ),
+            // ปุ่มจัดการ
+            detail: (
+              <>
+                {/* ปุ่มแก้ไข (ส่ง state ไปหน้า History) */}
+                <IconButton 
+                  aria-label="edit" 
+                  size="small" 
+                  component={Link} 
+                  to={`/student/History/edit/?id=${child.childId}`}
+                >
+                  <EditIcon fontSize="small" className='text-sky-600' />
+                </IconButton>
+                
+                {/* ปุ่มดู (ส่ง state ไปหน้า History เหมือนกัน) */}
+                <IconButton 
+                  aria-label="view" 
+                  size="small"
+                  component={Link} 
+                  to={`/student/History/view/?id=${child.childId}`}
+                >
+                  <RemoveRedEyeIcon fontSize="small" className='text-amber-500' />
+                </IconButton>
+                
+                <IconButton aria-label="delete" size="small" >
+                  <DeleteIcon fontSize="small" className='text-red-600' />
+                </IconButton>
+              </>
+            )
+          };
+        });
+        setRows(formattedRows);
+        setFilteredRows(formattedRows);
+      }
+    };
+    loadData();
+  }, [fetchChild, navigate]);
 
   const handleClassroomChange = (event: SelectChangeEvent) => {
     setClassroom(event.target.value as string);
@@ -234,6 +170,7 @@ export default function Student() {
     setSearchText(event.target.value);
   };
 
+  // Filter Logic
   useEffect(() => {
     let updatedRows = rows;
 
@@ -254,7 +191,7 @@ export default function Student() {
     }
 
     setFilteredRows(updatedRows);
-  }, [searchText, classroom, classroom1]);
+  }, [searchText, classroom, classroom1, rows]);
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -296,16 +233,12 @@ export default function Student() {
               onChange={handleClassroomChange}
               sx={{bgcolor: 'white'}}
             >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
               <MenuItem value="0 歳児">0</MenuItem>
               <MenuItem value="1 歳児">1</MenuItem>
               <MenuItem value="2 歳児">2</MenuItem>
               <MenuItem value="3 歳児">3</MenuItem>
               <MenuItem value="4 歳児">4</MenuItem>
               <MenuItem value="5 歳児">5</MenuItem>
-              <MenuItem value="6 歳児">6</MenuItem>
             </Select>
           </FormControl>
         </Grid>
@@ -333,7 +266,7 @@ export default function Student() {
           </FormControl>
         </Grid>
         <Grid item xs={4} sm={4} md={2}>
-          <Button variant="contained" href="#contained-buttons" className='scale-90'>
+          <Button variant="contained" className='scale-90'>
             <Typography component="div" style={{ color: 'white', paddingLeft: '10px' }}>
               検索する
             </Typography>
@@ -341,7 +274,7 @@ export default function Student() {
         </Grid>
       </Grid>
       <Grid container direction="row" justifyContent="end" alignItems="end" style={{ paddingTop: '20px' }} className='mt-3'>
-        <Button variant="contained" href="/student/History" className='scale-90' size="small">
+        <Button variant="contained" component={Link} to="/student/History" className='scale-90' size="small">
           <Typography component="div" style={{ color: 'white', paddingLeft: '10px' }}>
             Add
           </Typography>
@@ -367,8 +300,8 @@ export default function Student() {
               <TableBody>
                 {filteredRows
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row) => (
-                    <TableRow hover role="checkbox" tabIndex={-1} key={row.name}>
+                  .map((row, index) => (
+                    <TableRow hover role="checkbox" tabIndex={-1} key={row.childId || index}>
                       {columns.map((column) => {
                         const value = row[column.id];
                         return (
