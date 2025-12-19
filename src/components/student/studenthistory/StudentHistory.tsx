@@ -269,11 +269,15 @@ export default function StudentHistory() {
     setFamilyMemberCounter(newId);
     setFamilyMembers([...familyMembers, { id: newId }]);
   };
-  const removeFamilyMember = (id: number) => {
+  const removeFamilyMember = (targetId: number) => {
     if (isViewMode) return;
     if (familyMembers.length <= 1) return;
     if (window.confirm("この家族メンバーを削除してもよろしいですか？")) {
-      setFamilyMembers(familyMembers.filter((member) => member.id !== id));
+      setFamilyMembers(familyMembers.filter((member) => {
+        // ✅ แก้ไข: ให้เทียบ ID โดยดูทั้ง id (ที่สร้างใหม่) และ guardianId (ที่มีอยู่แล้ว)
+        const currentId = member.id || member.guardianId;
+        return currentId !== targetId;
+      }));
     }
   };
   // Helper Functions
@@ -1017,12 +1021,7 @@ export default function StudentHistory() {
                               <Typography variant="body1">
                                 {option.furigana}
                               </Typography>
-                              <Typography
-                                variant="caption"
-                                color="textSecondary"
-                              >
-                                {option.name_child}
-                              </Typography>
+                      
                             </Box>
                           </li>
                         )}
@@ -1148,38 +1147,63 @@ export default function StudentHistory() {
                     >
                       <Typography>氏名</Typography>
                     </TableCell>
-                    <TableCell>
-                      <Autocomplete
-                        disabled={isViewMode}
-                        options={searchOptions}
-                        getOptionLabel={(option) =>
-                          typeof option === "string"
-                            ? option
-                            : option.name_child
-                        }
-                        value={loadedData?.name_child || null}
-                        onChange={handleNameSelect}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            placeholder="山田　太郎"
-                            size="small"
-                            name="name_child"
-                            sx={{ bgcolor: "white" }}
-                          />
-                        )}
-                        // จัดหน้าตา Dropdown ให้เห็นชัดเจน
-                        renderOption={(props, option) => (
-                          <li {...props} key={option.childId}>
-                            <Box>
-                              <Typography variant="body1">
-                                {option.name_child}
-                              </Typography>
-                            </Box>
-                          </li>
-                        )}
-                      />
-                    </TableCell>
+                  <TableCell>
+  <Autocomplete
+    freeSolo // ✅ 1. ใส่ freeSolo เพื่อให้พิมพ์ข้อความอิสระได้
+    disabled={isViewMode}
+    options={searchOptions}
+    
+    // แสดงผล: ถ้าเป็น String (พิมพ์เอง) ก็แสดงเลย, ถ้าเป็น Object (เลือก) ก็แสดง name_child
+    getOptionLabel={(option) =>
+      typeof option === "string" ? option : option.name_child
+    }
+    
+    value={loadedData?.name_child || ""}
+    
+    // ✅ 2. เพิ่ม onInputChange: เมื่อพิมพ์ชื่อใหม่ ให้อัปเดต State ทันที
+    onInputChange={(_event, newInputValue) => {
+      handleChange({
+        target: { name: "name_child", value: newInputValue },
+      } as any);
+    }}
+
+    // ✅ 3. ปรับ onChange: ให้รองรับทั้งการ "เลือก" และการ "เคลียร์"
+    onChange={(event, newValue) => {
+      // กรณี: เลือกจากรายการ (เป็น Object ที่มี childId) -> โหลดข้อมูล
+      if (newValue && typeof newValue !== "string" && newValue.childId) {
+        handleNameSelect(event, newValue);
+      } 
+      // กรณี: กดปุ่มเคลียร์ (x) -> ล้างข้อมูล
+      else if (newValue === null) {
+        handleNameSelect(event, null);
+      }
+      // กรณี: พิมพ์เอง (String) -> ไม่ต้องทำอะไรเพิ่มใน onChange เพราะ onInputChange จัดการแล้ว
+    }}
+
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        placeholder="山田　太郎" // พิมพ์ชื่อเด็กใหม่ที่นี่
+        size="small"
+        name="name_child"
+        sx={{ bgcolor: "white" }}
+      />
+    )}
+    
+    // จัดหน้าตา Dropdown
+    renderOption={(props, option) => (
+      <li {...props} key={option.childId}>
+        <Box>
+          <Typography variant="body1">{option.name_child}</Typography>
+          {/* แถม: แสดง Furigana ด้วยเพื่อให้เลือกง่ายขึ้น */}
+          <Typography variant="caption" color="textSecondary">
+             ({option.furigana})
+          </Typography>
+        </Box>
+      </li>
+    )}
+  />
+</TableCell>
                     <TableCell>
                       <Box
                         sx={{
